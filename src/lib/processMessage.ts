@@ -24,13 +24,8 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   if (!changed) return
 
-  const hasPerm = msg.member?.permissions.has('ManageMessages')
-  if (hasPerm) {
-    await msg.delete().catch(() => null)
-    if ('send' in msg.channel) {
-      await msg.channel.send({ content: clean }).catch(() => null)
-    }
-  } else {
-    await msg.reply({ content: clean }).catch(() => null)
+  await msg.delete().catch(() => null)
+  if ('send' in msg.channel) {
+    await msg.channel.send({ content: clean }).catch(() => null)
   }
 }

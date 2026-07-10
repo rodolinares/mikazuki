@@ -9,7 +9,7 @@ A Discord bot that scans messages for URLs and reposts a cleaned version. The bo
 1. **Tracking parameter removal**: Strip tracking query parameters (e.g. `utm_source`, `utm_medium`, `fbclid`, `gclid`, `igshid`, `si`, `ref`) from any URL found in a message.
 2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative (e.g. `instagram.com` → `kkinstagram.com`, `x.com`/`twitter.com` → `fxtwitter.com`, `tiktok.com` → `kktiktok.com`, `reddit.com` → `rxddit.com`).
 
-If a message's URLs required either type of change, the bot deletes the original message (if it has permission) and reposts the cleaned content, attributed to the original author. If no changes were needed, the bot takes no action.
+If a message's URLs required either type of change, the bot deletes the original message and reposts the cleaned content, attributed to the original author. If no changes were needed, the bot takes no action.
 
 ## Tech Stack
 
@@ -73,7 +73,7 @@ Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) 
 - Use `async`/`await`, not raw Promise chains.
 - Validate all environment variables (bot token, client ID, etc.) at startup in `config.ts`; fail fast with a clear error if any are missing.
 - Do not log message content containing user data at info level; use debug level if logging is needed for troubleshooting.
-- Check for `MANAGE_MESSAGES` permission before attempting to delete the original message; if missing, post the cleaned version as a reply instead of deleting.
+- Attempt to delete the original message; silently ignore failures (e.g. missing `MANAGE_MESSAGES` permission).
 - All new domain rewrites or tracking parameters should be added to the respective config file, not hardcoded inline in logic.
 
 ## Testing
