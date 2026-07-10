@@ -9,6 +9,7 @@ const TRACKING_PARAMS = [
   "igshid",
   "si",
   "ref",
+  "igsh",
 ];
 
 const TRACKING_PREFIXES = ["utm_"];

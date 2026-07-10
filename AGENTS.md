@@ -7,7 +7,7 @@ This file provides guidance to OpenCode when working in this repository.
 A Discord bot that scans messages for URLs and reposts a cleaned version. The bot has two responsibilities:
 
 1. **Tracking parameter removal**: Strip tracking query parameters (e.g. `utm_source`, `utm_medium`, `fbclid`, `gclid`, `igshid`, `si`, `ref`) from any URL found in a message.
-2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative (e.g. `instagram.com` → `ddinstagram.com`, `x.com`/`twitter.com` → `fixupx.com`, `tiktok.com` → `vxtiktok.com`, `reddit.com` → `rxddit.com`).
+2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative (e.g. `instagram.com` → `kkinstagram.com`, `x.com`/`twitter.com` → `fxtwitter.com`, `tiktok.com` → `kktiktok.com`, `reddit.com` → `rxddit.com`).
 
 If a message's URLs required either type of change, the bot deletes the original message (if it has permission) and reposts the cleaned content, attributed to the original author. If no changes were needed, the bot takes no action.
 
@@ -53,11 +53,11 @@ Maintain the domain rewrite map as a single exported object in `src/lib/embedRew
 
 ```typescript
 export const EMBED_REWRITES: Record<string, string> = {
-  "instagram.com": "ddinstagram.com",
-  "www.instagram.com": "ddinstagram.com",
-  "x.com": "fixupx.com",
-  "twitter.com": "fixupx.com",
-  "tiktok.com": "vxtiktok.com",
+  "instagram.com": "kkinstagram.com",
+  "www.instagram.com": "kkinstagram.com",
+  "x.com": "fxtwitter.com",
+  "twitter.com": "fxtwitter.com",
+  "tiktok.com": "kktiktok.com",
   "reddit.com": "rxddit.com",
 };
 ```
