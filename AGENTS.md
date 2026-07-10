@@ -6,7 +6,7 @@ This file provides guidance to OpenCode when working in this repository.
 
 A Discord bot that scans messages for URLs and reposts a cleaned version. The bot has two responsibilities:
 
-1. **Tracking parameter removal**: Strip tracking query parameters (e.g. `utm_source`, `utm_medium`, `fbclid`, `gclid`, `igshid`, `si`, `ref`) from any URL found in a message.
+1. **Tracking parameter removal**: Strip tracking query parameters (e.g. `utm_source`, `utm_medium`, `fbclid`, `gclid`, `igshid`, `si`, `ref`, `igsh`, `is_from_webapp`, `sender_device`) from any URL found in a message. Also matches any `utm_*` prefix.
 2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative (e.g. `instagram.com` → `kkinstagram.com`, `x.com`/`twitter.com` → `fxtwitter.com`, `tiktok.com` → `kktiktok.com`, `reddit.com` → `rxddit.com`).
 
 If a message's URLs required either type of change, the bot deletes the original message and reposts the cleaned content, attributed to the original author. If no changes were needed, the bot takes no action.
@@ -35,14 +35,14 @@ Always use `pnpm` for adding, removing, or updating dependencies (`pnpm add`, `p
 ```
 src/
   index.ts            # Bot entry point, client login, event registration
+  config.ts           # Environment variable loading and validation (uses --env-file=.env)
   events/
-    messageCreate.ts   # Listens for messages, extracts URLs, triggers processing
+    messageCreate.ts   # Filters bot messages, delegates to processMessage
   lib/
-    urlExtractor.ts    # Finds URLs within message content
-    trackingParams.ts  # List/logic for stripping known tracking query params
-    embedRewrites.ts   # Domain-to-domain rewrite map and rewrite logic
-    processMessage.ts  # Orchestrates extraction, cleaning, rewriting, decides if a repost is needed
-  config.ts            # Environment variable loading and validation
+    urlExtractor.ts    # Finds URLs within message content via regex
+    trackingParams.ts  # isTrackingParam() + stripTrackingParams() for known tracking query params
+    embedRewrites.ts   # EMBED_REWRITES map + rewriteDomain() for domain-to-domain rewrites
+    processMessage.ts  # Orchestrates extraction, cleaning, rewriting; reposts via webhook (or fallback mention)
 tests/
   ...                  # Unit tests mirroring src/ structure
 ```
@@ -56,9 +56,14 @@ export const EMBED_REWRITES: Record<string, string> = {
   "instagram.com": "kkinstagram.com",
   "www.instagram.com": "kkinstagram.com",
   "x.com": "fxtwitter.com",
+  "www.x.com": "fxtwitter.com",
   "twitter.com": "fxtwitter.com",
+  "www.twitter.com": "fxtwitter.com",
   "tiktok.com": "kktiktok.com",
+  "vt.tiktok.com": "kktiktok.com",
+  "www.tiktok.com": "kktiktok.com",
   "reddit.com": "rxddit.com",
+  "www.reddit.com": "rxddit.com",
 };
 ```
 
@@ -71,7 +76,7 @@ Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) 
 ## Conventions
 
 - Use `async`/`await`, not raw Promise chains.
-- Validate all environment variables (bot token, client ID, etc.) at startup in `config.ts`; fail fast with a clear error if any are missing.
+- Validate all environment variables at startup in `config.ts`; fail fast with a clear error if any are missing. Currently only `DISCORD_TOKEN` is required.
 - Do not log message content containing user data at info level; use debug level if logging is needed for troubleshooting.
 - Attempt to delete the original message; silently ignore failures (e.g. missing `MANAGE_MESSAGES` permission).
 - All new domain rewrites or tracking parameters should be added to the respective config file, not hardcoded inline in logic.

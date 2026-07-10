@@ -6,14 +6,19 @@ Discord bot that cleans URLs in messages — strips tracking parameters and rewr
 
 1. Scans messages for URLs
 2. Strips tracking params (`utm_*`, `fbclid`, `gclid`, `igshid`, `si`, `ref`)
-3. Rewrites broken-embed domains (`instagram.com` → `kkinstagram.com`, `x.com` → `fxtwitter.com`, `tiktok.com` → `kktiktok.com`, `reddit.com` → `rxddit.com`)
+3. Rewrites broken-embed domains (`instagram.com` → `kkinstagram.com`, `x.com`/`twitter.com` → `fxtwitter.com`, `tiktok.com` → `kktiktok.com`, `reddit.com` → `rxddit.com`)
 4. Deletes original + reposts clean version
 
 ## Setup
 
+Create a `.env` file with your bot token:
+
+```
+DISCORD_TOKEN=your-bot-token
+```
+
 ```bash
 pnpm install
-export DISCORD_TOKEN="your-bot-token"
 pnpm dev
 ```
 
