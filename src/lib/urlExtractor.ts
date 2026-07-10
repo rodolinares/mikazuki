@@ -1,4 +1,4 @@
-const URL_REGEX = /https?:\/\/[^\s<>"]+/g
+export const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
 export const extractUrls = (text: string): URL[] => {
   const matches = text.match(URL_REGEX) ?? []

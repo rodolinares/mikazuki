@@ -1,24 +1,28 @@
 import { Message } from 'discord.js'
-import { extractUrls } from './urlExtractor.js'
+import { URL_REGEX } from './urlExtractor.js'
 import { stripTrackingParams } from './trackingParams.js'
 import { rewriteDomain } from './embedRewrites.js'
 
 export const processMessage = async (msg: Message): Promise<void> => {
-  const urls = extractUrls(msg.content)
-  if (!urls.length) return
-
   let changed = false
 
-  for (const url of urls) {
-    const before = url.toString()
-    rewriteDomain(url)
-    stripTrackingParams(url)
-    if (url.toString() !== before) changed = true
-  }
+  const clean = msg.content.replace(URL_REGEX, match => {
+    try {
+      const url = new URL(match)
+      const before = url.toString()
+      rewriteDomain(url)
+      stripTrackingParams(url)
+      if (url.toString() !== before) {
+        changed = true
+        return url.toString()
+      }
+    } catch {
+      // invalid URL, leave as-is
+    }
+    return match
+  })
 
   if (!changed) return
-
-  const clean = urls.map(u => u.toString()).join('\n')
 
   const hasPerm = msg.member?.permissions.has('ManageMessages')
   if (hasPerm) {
