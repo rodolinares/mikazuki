@@ -1,11 +1,11 @@
 import { describe, it, expect } from "vitest";
-import { rewriteDomain, EMBED_REWRITES } from "../src/lib/embedRewrites.js";
+import { rewriteDomain, EMBED_REWRITE_CHAINS } from "../src/lib/embedRewrites.js";
 
 describe("rewriteDomain", () => {
   it("rewrites known domains", () => {
     const url = new URL("https://instagram.com/p/123");
     expect(rewriteDomain(url)).toBe(true);
-    expect(url.hostname).toBe("kkinstagram.com");
+    expect(url.hostname).toBe("ddinstagram.com");
     expect(url.pathname).toBe("/p/123");
   });
 
@@ -24,13 +24,15 @@ describe("rewriteDomain", () => {
   it("handles www prefix", () => {
     const url = new URL("https://www.instagram.com/stories/user");
     rewriteDomain(url);
-    expect(url.hostname).toBe("kkinstagram.com");
+    expect(url.hostname).toBe("ddinstagram.com");
   });
 
-  it("all rewrite targets are valid hostnames", () => {
-    for (const [from, to] of Object.entries(EMBED_REWRITES)) {
-      expect(to).toMatch(/^[a-z0-9.-]+$/);
+  it("all rewrite chains are valid", () => {
+    for (const [from, chain] of Object.entries(EMBED_REWRITE_CHAINS)) {
       expect(from).toMatch(/^[a-z0-9.-]+$/);
+      for (const to of chain) {
+        expect(to).toMatch(/^[a-z0-9.-]+$/);
+      }
     }
   });
 });
