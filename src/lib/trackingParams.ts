@@ -16,7 +16,7 @@ const TRACKING_PARAMS = [
 
 const TRACKING_PREFIXES = ['utm_']
 
-export const isTrackingParam = (key: string): boolean => {
+const isTrackingParam = (key: string): boolean => {
   const lower = key.toLowerCase()
   if (TRACKING_PARAMS.includes(lower)) return true
   return TRACKING_PREFIXES.some(p => lower.startsWith(p))
