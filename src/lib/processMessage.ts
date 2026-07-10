@@ -1,4 +1,5 @@
 import { ChannelType, Message, Webhook } from 'discord.js'
+import { config } from '../config.js'
 import { URL_REGEX } from './urlExtractor.js'
 import { stripTrackingParams } from './trackingParams.js'
 import { rewriteDomain } from './embedRewrites.js'
@@ -52,10 +53,10 @@ export const processMessage = async (msg: Message): Promise<void> => {
   if (!changed) return
 
   console.log(`[CLEAN] #${msg.channelId} @${msg.author.username}: ${original} → ${clean}`)
-
   await msg.delete().catch(() => null)
 
-  const webhook = await getOrCreateWebhook(msg)
+  const webhook = config.webhookImpersonation ? await getOrCreateWebhook(msg) : null
+
   if (webhook) {
     await webhook
       .send({
