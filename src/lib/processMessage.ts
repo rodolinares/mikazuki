@@ -5,8 +5,9 @@ import { rewriteDomain } from './embedRewrites.js'
 
 export const processMessage = async (msg: Message): Promise<void> => {
   let changed = false
+  const original = msg.content
 
-  const clean = msg.content.replace(URL_REGEX, match => {
+  const clean = original.replace(URL_REGEX, match => {
     try {
       const url = new URL(match)
       const before = url.toString()
@@ -23,6 +24,10 @@ export const processMessage = async (msg: Message): Promise<void> => {
   })
 
   if (!changed) return
+
+  console.log(
+    `[CLEAN] #${msg.channelId} @${msg.author.username}: ${original} → ${clean}`
+  )
 
   await msg.delete().catch(() => null)
   if ('send' in msg.channel) {
