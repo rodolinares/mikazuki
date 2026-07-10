@@ -66,6 +66,8 @@ export const processMessage = async (msg: Message): Promise<void> => {
       })
       .catch(() => null)
   } else if ('send' in msg.channel) {
-    await msg.channel.send({ content: `<@${msg.author.id}>\n> ${clean}` }).catch(() => null)
+    await msg.channel
+      .send({ content: `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${clean}` })
+      .catch(() => null)
   }
 }
