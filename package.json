@@ -6,6 +6,7 @@
     "dev": "tsx watch --env-file=.env src/index.ts",
     "build": "tsc",
     "start": "node --env-file=.env dist/index.js",
+    "format": "prettier --write \"src/**/*.ts\"",
     "lint": "eslint src/ && prettier --check src/",
     "test": "vitest run"
   },
