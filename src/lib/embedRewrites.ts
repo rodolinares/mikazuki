@@ -3,6 +3,7 @@ import { getHealthyDomains, isDomainSuspect } from './domainHealth.js'
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'instagram.com': [
     'ddinstagram.com',
+    'uuinstagram.com',
     'xnstagram.com',
     'kkinstagram.com',
     'eeinstagram.com',
@@ -10,6 +11,7 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   ],
   'www.instagram.com': [
     'ddinstagram.com',
+    'uuinstagram.com',
     'xnstagram.com',
     'kkinstagram.com',
     'eeinstagram.com',
@@ -17,6 +19,7 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   ],
   'm.instagram.com': [
     'ddinstagram.com',
+    'uuinstagram.com',
     'xnstagram.com',
     'kkinstagram.com',
     'eeinstagram.com',
@@ -24,6 +27,7 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   ],
   'instagr.am': [
     'ddinstagram.com',
+    'uuinstagram.com',
     'xnstagram.com',
     'kkinstagram.com',
     'eeinstagram.com',

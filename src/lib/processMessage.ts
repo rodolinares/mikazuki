@@ -1,5 +1,6 @@
-import { ChannelType, Message, TextChannel, Webhook } from 'discord.js'
+import { ChannelType, EmbedBuilder, Message, TextChannel, Webhook } from 'discord.js'
 import { config } from '../config.js'
+import { extractPostId, detectCarouselImages } from './carouselDetector.js'
 import { getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed, hasEmbed } from './embedDetector.js'
@@ -68,6 +69,7 @@ interface CleanedUrl {
   original: string
   cleaned: string
   alternatives: string[]
+  carouselImages?: string[]
 }
 
 const cleanUrl = async (match: string): Promise<CleanedUrl> => {
@@ -89,19 +91,25 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
         const result = await checkHttpStatus(testUrl.toString())
         if (result.ok) {
           recordSuccess(domain)
+          const postId = extractPostId(url.pathname)
+          const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
           return {
             original: match,
             cleaned: testUrl.toString(),
-            alternatives: chain.filter(d => d !== domain)
+            alternatives: chain.filter(d => d !== domain),
+            carouselImages
           }
         } else {
           recordFailure(domain)
         }
       } else {
+        const postId = extractPostId(url.pathname)
+        const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
         return {
           original: match,
           cleaned: testUrl.toString(),
-          alternatives: chain.filter(d => d !== domain)
+          alternatives: chain.filter(d => d !== domain),
+          carouselImages
         }
       }
     }
@@ -118,13 +126,18 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
   }
 }
 
-const postMessage = async (msg: Message, content: string): Promise<Message | null> => {
+const postMessage = async (
+  msg: Message,
+  content: string,
+  embeds?: EmbedBuilder[]
+): Promise<Message | null> => {
   const webhook = config.webhookImpersonation ? await getOrCreateWebhook(msg) : null
 
   if (webhook) {
     try {
       const sent = await webhook.send({
         content,
+        embeds,
         username: msg.author.username,
         avatarURL: msg.author.displayAvatarURL()
       })
@@ -136,9 +149,10 @@ const postMessage = async (msg: Message, content: string): Promise<Message | nul
 
   if ('send' in msg.channel) {
     try {
-      return await msg.channel.send({
-        content: `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${content}`
-      })
+      const text = content
+        ? `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${content}`
+        : ''
+      return await msg.channel.send({ content: text, embeds })
     } catch {
       return null
     }
@@ -172,6 +186,31 @@ export const processMessage = async (msg: Message): Promise<void> => {
   let clean = original
   for (const cleaned of cleanedUrls) {
     clean = clean.replace(cleaned.original, cleaned.cleaned)
+  }
+
+  const carouselUrls = cleanedUrls.filter(c => c.carouselImages && c.carouselImages.length > 1)
+
+  if (carouselUrls.length > 0) {
+    let carouselClean = original
+    for (const cleaned of cleanedUrls) {
+      if (cleaned.carouselImages && cleaned.carouselImages.length > 1) {
+        carouselClean = carouselClean.replace(cleaned.original, '')
+      } else {
+        carouselClean = carouselClean.replace(cleaned.original, cleaned.cleaned)
+      }
+    }
+    carouselClean = carouselClean.replace(/\s{2,}/g, ' ').trim()
+
+    const embeds: EmbedBuilder[] = []
+    for (const c of carouselUrls) {
+      for (const imgUrl of c.carouselImages!) {
+        embeds.push(new EmbedBuilder().setURL(c.cleaned).setImage(imgUrl))
+      }
+    }
+
+    await postMessage(msg, carouselClean, embeds)
+
+    return
   }
 
   const sentMsg = await postMessage(msg, clean)

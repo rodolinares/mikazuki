@@ -16,7 +16,7 @@ export async function checkHttpStatus(url: string): Promise<ValidationResult> {
       redirect: 'follow'
     })
 
-    if (response.status === 405) {
+    if (!response.ok) {
       response = await fetch(url, {
         method: 'GET',
         signal: AbortSignal.timeout(timeout),
