@@ -1,6 +1,6 @@
-import { Client, Events, GatewayIntentBits } from 'discord.js'
+import { Client, Events, GatewayIntentBits, Message } from 'discord.js'
 import { config } from './config.js'
-import { execute, name } from './events/messageCreate.js'
+import { processMessage } from './lib/processMessage.js'
 
 const client = new Client({
   intents: [
@@ -11,6 +11,9 @@ const client = new Client({
 })
 
 client.once(Events.ClientReady, c => console.log(`Ready: ${c.user.tag}`))
-client.on(name, execute)
+client.on(Events.MessageCreate, (msg: Message): void => {
+  if (msg.author.bot) return
+  processMessage(msg)
+})
 
 client.login(config.token)

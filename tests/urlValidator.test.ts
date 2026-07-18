@@ -1,5 +1,5 @@
 import { describe, it, expect, vi, beforeEach } from 'vitest'
-import { validateUrl, checkHttpStatus, findWorkingUrl } from '../src/lib/urlValidator.js'
+import { checkHttpStatus } from '../src/lib/urlValidator.js'
 
 vi.mock('../src/config.js', () => ({
   config: {
@@ -59,58 +59,4 @@ describe('urlValidator', () => {
     })
   })
 
-  describe('validateUrl', () => {
-    it('returns true for valid URL', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: true,
-        status: 200
-      }))
-
-      expect(await validateUrl('https://example.com')).toBe(true)
-    })
-
-    it('returns false for invalid URL', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404
-      }))
-
-      expect(await validateUrl('https://example.com')).toBe(false)
-    })
-  })
-
-  describe('findWorkingUrl', () => {
-    it('returns first working URL', async () => {
-      vi.stubGlobal('fetch', vi.fn()
-        .mockResolvedValueOnce({ ok: false, status: 404 })
-        .mockResolvedValueOnce({ ok: true, status: 200 })
-      )
-
-      const result = await findWorkingUrl([
-        'https://broken.com',
-        'https://working.com'
-      ])
-
-      expect(result).toBe('https://working.com')
-    })
-
-    it('returns null if no URLs work', async () => {
-      vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
-        ok: false,
-        status: 404
-      }))
-
-      const result = await findWorkingUrl([
-        'https://broken1.com',
-        'https://broken2.com'
-      ])
-
-      expect(result).toBeNull()
-    })
-
-    it('returns empty array for empty input', async () => {
-      const result = await findWorkingUrl([])
-      expect(result).toBeNull()
-    })
-  })
 })

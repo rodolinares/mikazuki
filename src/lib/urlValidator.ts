@@ -1,6 +1,6 @@
 import { config } from '../config.js'
 
-export interface ValidationResult {
+interface ValidationResult {
   ok: boolean
   status: number
   url: string
@@ -10,7 +10,6 @@ export async function checkHttpStatus(url: string): Promise<ValidationResult> {
   const timeout = config.urlValidationTimeout
 
   try {
-    // Try HEAD first, fallback to GET if 405
     let response = await fetch(url, {
       method: 'HEAD',
       signal: AbortSignal.timeout(timeout),
@@ -37,19 +36,4 @@ export async function checkHttpStatus(url: string): Promise<ValidationResult> {
       url
     }
   }
-}
-
-export async function validateUrl(url: string): Promise<boolean> {
-  const result = await checkHttpStatus(url)
-  return result.ok
-}
-
-export async function findWorkingUrl(urls: string[]): Promise<string | null> {
-  for (const url of urls) {
-    const result = await checkHttpStatus(url)
-    if (result.ok) {
-      return url
-    }
-  }
-  return null
 }

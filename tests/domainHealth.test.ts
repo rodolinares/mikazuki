@@ -1,11 +1,10 @@
-import { describe, it, expect, beforeEach, afterEach } from 'vitest'
+import { describe, it, expect, beforeEach } from 'vitest'
 import {
   recordFailure,
   recordSuccess,
   getFailureRate,
   getHealthyDomains,
   isDomainSuspect,
-  resetDaily,
   clearAll
 } from '../src/lib/domainHealth.js'
 
@@ -74,13 +73,4 @@ describe('domainHealth', () => {
     })
   })
 
-  describe('resetDaily', () => {
-    it('resets old data', () => {
-      recordFailure('old.com')
-      const stats = getFailureRate('old.com')
-      expect(stats).toBe(1)
-      clearAll()
-      expect(getFailureRate('old.com')).toBe(0)
-    })
-  })
 })

@@ -1,11 +1,42 @@
 import { ChannelType, Message, TextChannel, Webhook } from 'discord.js'
 import { config } from '../config.js'
-import { URL_REGEX } from './urlExtractor.js'
-import { stripTrackingParams } from './trackingParams.js'
 import { getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed, hasEmbed } from './embedDetector.js'
 import { recordFailure, recordSuccess } from './domainHealth.js'
+
+const URL_REGEX = /https?:\/\/[^\s<>"]+/g
+
+const TRACKING_PARAMS = [
+  'fbclid',
+  'gclid',
+  'igsh',
+  'igshid',
+  'is_from_webapp',
+  'ref',
+  's',
+  'sender_device',
+  'si',
+  'utm_campaign',
+  'utm_content',
+  'utm_medium',
+  'utm_source',
+  'utm_term'
+]
+
+const TRACKING_PREFIXES = ['utm_']
+
+const isTrackingParam = (key: string): boolean => {
+  const lower = key.toLowerCase()
+  if (TRACKING_PARAMS.includes(lower)) return true
+  return TRACKING_PREFIXES.some(p => lower.startsWith(p))
+}
+
+export const stripTrackingParams = (url: URL): void => {
+  for (const key of [...url.searchParams.keys()]) {
+    if (isTrackingParam(key)) url.searchParams.delete(key)
+  }
+}
 
 const webhookCache = new Map<string, Webhook>()
 
@@ -67,7 +98,6 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
           recordFailure(domain)
         }
       } else {
-        stripTrackingParams(testUrl)
         return {
           original: match,
           cleaned: testUrl.toString(),

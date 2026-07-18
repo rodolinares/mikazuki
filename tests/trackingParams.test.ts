@@ -1,5 +1,16 @@
-import { describe, it, expect } from "vitest";
-import { stripTrackingParams } from "../src/lib/trackingParams.js";
+import { describe, it, expect, vi } from "vitest";
+import { stripTrackingParams } from "../src/lib/processMessage.js";
+
+vi.mock('../src/config.js', () => ({
+  config: {
+    urlValidationTimeout: 3000,
+    embedWaitTimeout: 3000,
+    enableUrlValidation: true,
+    enableEmbedDetection: true,
+    webhookImpersonation: false,
+    token: 'mock-token'
+  }
+}))
 
 describe("stripTrackingParams", () => {
   it("removes tracking params", () => {

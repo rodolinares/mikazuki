@@ -45,14 +45,6 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'm.reddit.com': ['rxddit.com', 'redditez.com', 'vxreddit.com', 'reddit.com']
 }
 
-export const rewriteDomain = (url: URL): boolean => {
-  const host = url.hostname.toLowerCase()
-  const chain = EMBED_REWRITE_CHAINS[host]
-  if (!chain || chain.length === 0) return false
-  url.hostname = chain[0]
-  return true
-}
-
 export const getRewriteChain = (host: string): string[] => {
   const chain = EMBED_REWRITE_CHAINS[host.toLowerCase()] || []
   return getHealthyDomains(chain).filter(d => !isDomainSuspect(d))

@@ -67,18 +67,6 @@ export function isDomainSuspect(domain: string): boolean {
   return getFailureRate(domain) > 0.9
 }
 
-export function resetDaily(): void {
-  const now = Date.now()
-  const oneDay = 24 * 60 * 60 * 1000
-
-  for (const [domain, stats] of healthData) {
-    if (now - stats.lastUpdated > oneDay) {
-      healthData.delete(domain)
-    }
-  }
-  saveHealthData()
-}
-
 export function clearAll(): void {
   healthData.clear()
   saveHealthData()
