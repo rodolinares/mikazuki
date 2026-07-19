@@ -1,5 +1,3 @@
-import { getHealthyDomains, isDomainSuspect } from './domainHealth.js'
-
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'instagram.com': [
     'ddinstagram.com',
@@ -50,6 +48,5 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
 }
 
 export const getRewriteChain = (host: string): string[] => {
-  const chain = EMBED_REWRITE_CHAINS[host.toLowerCase()] || []
-  return getHealthyDomains(chain).filter(d => !isDomainSuspect(d))
+  return EMBED_REWRITE_CHAINS[host.toLowerCase()] || []
 }

@@ -4,7 +4,6 @@ import { extractPostId, detectCarouselImages } from './carouselDetector.js'
 import { getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed, hasEmbed } from './embedDetector.js'
-import { recordFailure, recordSuccess } from './domainHealth.js'
 
 const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
@@ -90,7 +89,6 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
       if (config.enableUrlValidation) {
         const result = await checkHttpStatus(testUrl.toString())
         if (result.ok) {
-          recordSuccess(domain)
           const postId = extractPostId(url.pathname)
           const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
           return {
@@ -99,8 +97,6 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
             alternatives: chain.filter(d => d !== domain),
             carouselImages
           }
-        } else {
-          recordFailure(domain)
         }
       } else {
         const postId = extractPostId(url.pathname)
@@ -242,11 +238,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
       if (config.enableUrlValidation) {
         const result = await checkHttpStatus(altUrl.toString())
-        if (!result.ok) {
-          recordFailure(alt)
-          continue
-        }
-        recordSuccess(alt)
+        if (!result.ok) continue
       }
 
       const altClean = clean.replace(cleaned.cleaned, altUrl.toString())

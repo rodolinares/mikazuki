@@ -4,7 +4,7 @@ import { config } from '../config.js'
 export async function hasEmbed(channel: TextChannel, messageId: string): Promise<boolean> {
   try {
     const message = await channel.messages.fetch(messageId)
-    return message.embeds.length > 0
+    return message.embeds.some(e => e.image || e.video)
   } catch {
     return false
   }
