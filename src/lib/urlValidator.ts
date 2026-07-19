@@ -25,7 +25,7 @@ export async function checkHttpStatus(url: string): Promise<ValidationResult> {
     }
 
     return {
-      ok: response.ok,
+      ok: true,
       status: response.status,
       url
     }

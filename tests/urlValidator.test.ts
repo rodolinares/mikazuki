@@ -39,14 +39,14 @@ describe('urlValidator', () => {
       expect(fetchMock).toHaveBeenCalledTimes(2)
     })
 
-    it('returns not ok for failed request', async () => {
+    it('returns ok for non-2xx response (server alive)', async () => {
       vi.stubGlobal('fetch', vi.fn().mockResolvedValue({
         ok: false,
         status: 404
       }))
 
       const result = await checkHttpStatus('https://example.com')
-      expect(result.ok).toBe(false)
+      expect(result.ok).toBe(true)
       expect(result.status).toBe(404)
     })
 

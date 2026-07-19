@@ -3,7 +3,7 @@ import { config } from '../config.js'
 import { extractPostId, detectCarouselImages } from './carouselDetector.js'
 import { getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
-import { waitForEmbed, hasEmbed } from './embedDetector.js'
+import { waitForEmbed } from './embedDetector.js'
 
 const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
@@ -81,32 +81,23 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
       return { original: match, cleaned: match, alternatives: [] }
     }
 
-    for (const domain of chain) {
+    for (const [i, domain] of chain.entries()) {
       const testUrl = new URL(url.toString())
       testUrl.hostname = domain
       stripTrackingParams(testUrl)
 
-      if (config.enableUrlValidation) {
+      if (config.enableUrlValidation && i > 0) {
         const result = await checkHttpStatus(testUrl.toString())
-        if (result.ok) {
-          const postId = extractPostId(url.pathname)
-          const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
-          return {
-            original: match,
-            cleaned: testUrl.toString(),
-            alternatives: chain.filter(d => d !== domain),
-            carouselImages
-          }
-        }
-      } else {
-        const postId = extractPostId(url.pathname)
-        const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
-        return {
-          original: match,
-          cleaned: testUrl.toString(),
-          alternatives: chain.filter(d => d !== domain),
-          carouselImages
-        }
+        if (!result.ok) continue
+      }
+
+      const postId = extractPostId(url.pathname)
+      const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
+      return {
+        original: match,
+        cleaned: testUrl.toString(),
+        alternatives: chain.filter(d => d !== domain),
+        carouselImages
       }
     }
 
@@ -226,11 +217,10 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   if (firstHasEmbed) return
 
-  let bestMsg = sentMsg
-
   for (const cleaned of cleanedUrls) {
     if (cleaned.alternatives.length === 0) continue
 
+    let currentUrl = cleaned.cleaned
     for (const alt of cleaned.alternatives) {
       const altUrl = new URL(cleaned.cleaned)
       altUrl.hostname = alt
@@ -241,18 +231,13 @@ export const processMessage = async (msg: Message): Promise<void> => {
         if (!result.ok) continue
       }
 
-      const altClean = clean.replace(cleaned.cleaned, altUrl.toString())
-      const altSent = await postMessage(msg, altClean)
+      const newUrl = altUrl.toString()
+      const newContent = sentMsg.content.replace(currentUrl, newUrl)
+      const edited = await sentMsg.edit(newContent).catch(() => null)
+      if (edited) currentUrl = newUrl
 
-      if (altSent) {
-        await bestMsg.delete().catch(() => null)
-        bestMsg = altSent
-
-        const altHasEmbed = await waitForEmbed(channel, altSent.id)
-        if (altHasEmbed) return
-      }
-
-      if (await hasEmbed(channel, sentMsg.id)) return
+      const altHasEmbed = await waitForEmbed(channel, sentMsg.id)
+      if (altHasEmbed) return
     }
   }
 }
