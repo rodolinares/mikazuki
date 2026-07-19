@@ -6,7 +6,9 @@ export const extractPostId = (pathname: string): string | null => {
   return m?.[1] ?? null
 }
 
-const INSTAFIX_DOMAINS = ['ddinstagram.com', 'uuinstagram.com', 'eeinstagram.com']
+import { EMBED_REWRITE_CHAINS } from './embedRewrites.js'
+
+const INSTAFIX_DOMAINS = EMBED_REWRITE_CHAINS['instagram.com'] || []
 const PROBE_TIMEOUT = 1500
 
 const imgUrl = (domain: string, postId: string, n: number) =>

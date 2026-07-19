@@ -16,12 +16,7 @@ const TRACKING_PARAMS = [
   'ref',
   's',
   'sender_device',
-  'si',
-  'utm_campaign',
-  'utm_content',
-  'utm_medium',
-  'utm_source',
-  'utm_term'
+  'si'
 ]
 
 const TRACKING_PREFIXES = ['utm_']

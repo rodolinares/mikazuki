@@ -3,7 +3,6 @@ import { config } from '../config.js'
 interface ValidationResult {
   ok: boolean
   status: number
-  url: string
 }
 
 export async function checkHttpStatus(url: string): Promise<ValidationResult> {
@@ -26,14 +25,12 @@ export async function checkHttpStatus(url: string): Promise<ValidationResult> {
 
     return {
       ok: true,
-      status: response.status,
-      url
+      status: response.status
     }
   } catch {
     return {
       ok: false,
-      status: 0,
-      url
+      status: 0
     }
   }
 }

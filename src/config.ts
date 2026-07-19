@@ -9,4 +9,4 @@ export const config = {
   embedWaitTimeout: parseInt(process.env.EMBED_WAIT_TIMEOUT || '7000', 10),
   enableUrlValidation: process.env.ENABLE_URL_VALIDATION !== 'false',
   enableEmbedDetection: process.env.ENABLE_EMBED_DETECTION !== 'false'
-} as const
+}
