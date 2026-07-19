@@ -4,11 +4,12 @@ This file provides guidance to OpenCode when working in this repository.
 
 ## Project Overview
 
-A Discord bot that scans messages for URLs and reposts a cleaned version. The bot has three responsibilities:
+A Discord bot that scans messages for URLs and reposts a cleaned version. The bot has four responsibilities:
 
-1. **Tracking parameter removal**: Strip tracking query parameters (e.g. `utm_source`, `utm_medium`, `fbclid`, `gclid`, `igshid`, `si`, `ref`, `igsh`, `is_from_webapp`, `sender_device`) from any URL found in a message. Also matches any `utm_*` prefix.
+1. **Tracking parameter removal**: Strip tracking query parameters (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `s`, `sender_device`, `si`, any `utm_*`) from any URL found in a message.
 2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative using priority-ordered fallback chains.
 3. **Fallback validation**: Validate each rewritten URL via HTTP request before posting, and after posting, verify embed generation. If validation fails or embed doesn't appear, try the next alternative in the chain.
+4. **Carousel detection**: For Instagram posts, detect multi-image carousels and repost each image as a separate embed.
 
 If a message's URLs required any change, the bot deletes the original message and reposts the cleaned content, attributed to the original author. If no changes were needed, the bot takes no action.
 
@@ -36,21 +37,21 @@ Always use `pnpm` for adding, removing, or updating dependencies (`pnpm add`, `p
 
 ```
 src/
-  index.ts            # Bot entry point, client login, event registration
+  index.ts            # Bot entry point, client login, event registration, MessageCreate handler
   config.ts           # Environment variable loading and validation (uses --env-file=.env)
-  events/
-    messageCreate.ts   # Filters bot messages, delegates to processMessage
   lib/
-    urlExtractor.ts    # Finds URLs within message content via regex
-    trackingParams.ts  # isTrackingParam() + stripTrackingParams() for known tracking query params
-    embedRewrites.ts   # EMBED_REWRITE_CHAINS map + rewriteDomain() + getRewriteChain()
-    urlValidator.ts    # HTTP validation for rewritten URLs
+    embedRewrites.ts   # EMBED_REWRITE_CHAINS map + getRewriteChain()
+    urlValidator.ts    # HTTP HEAD/GET validation for rewritten URLs
     embedDetector.ts   # Post-send embed detection with polling
-    domainHealth.ts    # Failure rate tracking and auto-downranking
-    processMessage.ts  # Orchestrates extraction, cleaning, validation, fallback, reposting
+    carouselDetector.ts # Instagram carousel multi-image detection via image probing
+    processMessage.ts  # Orchestrates everything: URL extraction, tracking stripping, rewriting, validation, fallback, carousel handling, reposting
 tests/
-  ...                  # Unit tests mirroring src/ structure
+  embedRewrites.test.ts
+  trackingParams.test.ts
+  urlValidator.test.ts
 ```
+
+Tracking params and URL regex are defined inline in `src/lib/processMessage.ts` — not in separate files.
 
 ## Domain Rewrite Chains
 
@@ -59,8 +60,8 @@ Maintain the domain rewrite chains as a single exported object in `src/lib/embed
 ```typescript
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   // Instagram: ddinstagram is most established
-  "instagram.com": ["ddinstagram.com", "xnstagram.com", "kkinstagram.com", "eeinstagram.com", "instagram.com"],
-  "www.instagram.com": ["ddinstagram.com", "xnstagram.com", "kkinstagram.com", "eeinstagram.com", "instagram.com"],
+  "instagram.com": ["ddinstagram.com", "uuinstagram.com", "xnstagram.com", "kkinstagram.com", "eeinstagram.com", "instagram.com"],
+  "www.instagram.com": ["ddinstagram.com", "uuinstagram.com", "xnstagram.com", "kkinstagram.com", "eeinstagram.com", "instagram.com"],
   
   // Twitter/X: fxtwitter is gold standard
   "x.com": ["fxtwitter.com", "fixupx.com", "vxtwitter.com", "fixvx.com", "x.com"],
@@ -77,27 +78,25 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
 };
 ```
 
-The `getRewriteChain()` function returns the chain sorted by domain health, filtering out suspect domains (>90% failure rate).
+The `getRewriteChain()` function returns the chain for a hostname, or empty array if no rewrite exists.
+
+Also handles these variant hostnames with the same chains: `m.instagram.com`, `instagr.am`, `www.twitter.com`, `mobile.twitter.com`, `www.tiktok.com`, `vm.tiktok.com`, `m.tiktok.com`, `old.reddit.com`, `m.reddit.com`.
 
 Preserve the path, and any remaining non-tracking query parameters, when rewriting the hostname.
 
 ## Tracking Parameter List
 
-Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) as a single exported array or set in `src/lib/trackingParams.ts`. Strip a parameter if its key exactly matches an entry or matches a known prefix pattern. Never strip parameters that are not on the known-tracking list, even if they look unfamiliar, since they may carry functional meaning for the target site.
+Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) as a single exported array in `src/lib/processMessage.ts`. Strip a parameter if its key exactly matches an entry or matches a known prefix pattern. Never strip parameters that are not on the known-tracking list, even if they look unfamiliar, since they may carry functional meaning for the target site.
 
 ## Fallback Chain System
 
 ### URL Validation (`src/lib/urlValidator.ts`)
 
-Before posting a cleaned URL, validate it via HTTP HEAD request (fallback to GET on 405). Returns the first working URL from the chain. Configurable timeout via `URL_VALIDATION_TIMEOUT` (default: 3000ms).
+Before posting a cleaned URL, validate it via HTTP HEAD request (fallback to GET on 405). Returns ok/fail status. Configurable timeout via `URL_VALIDATION_TIMEOUT` (default: 3000ms). Only validates alternatives past index 0 (the primary rewrite domain is trusted).
 
 ### Embed Detection (`src/lib/embedDetector.ts`)
 
-After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 7000ms). If no embed appears, try the next alternative in the chain.
-
-### Domain Health (`src/lib/domainHealth.ts`)
-
-Track success/failure rates per domain. Domains with >90% failure rate are marked as suspect and skipped. Health data persists in `.domain-health.json` in the config directory.
+After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 7000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message.
 
 ## Environment Variables
 
@@ -118,7 +117,6 @@ Optional:
 - Do not log message content containing user data at info level; use debug level if logging is needed for troubleshooting.
 - Attempt to delete the original message; silently ignore failures (e.g. missing `MANAGE_MESSAGES` permission).
 - All new domain rewrites or tracking parameters should be added to the respective config file, not hardcoded inline in logic.
-- Domain health tracking is automatic — no manual intervention needed.
 
 ## Testing
 
