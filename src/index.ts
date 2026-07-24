@@ -11,8 +11,9 @@ const client = new Client({
 })
 
 client.once(Events.ClientReady, c =>
-  console.log(`[${new Date().toISOString()}] Ready: ${c.user.tag}`)
+  console.log(`[${new Date().toLocaleString('sv-SE')}] Ready: ${c.user.tag}`)
 )
+
 client.on(Events.MessageCreate, (msg: Message): void => {
   if (msg.author.bot) return
   processMessage(msg)

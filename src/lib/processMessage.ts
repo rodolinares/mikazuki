@@ -163,8 +163,9 @@ export const processMessage = async (msg: Message): Promise<void> => {
   if (!anyChanged) return
 
   console.log(
-    `[${new Date().toISOString()}] [CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`
+    `[${new Date().toLocaleString('sv-SE')}] [CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`
   )
+
   await msg.delete().catch(() => null)
 
   let clean = original
