@@ -31,7 +31,3 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'old.reddit.com': REDDIT,
   'm.reddit.com': REDDIT
 }
-
-export const getRewriteChain = (host: string): string[] => {
-  return EMBED_REWRITE_CHAINS[host.toLowerCase()] || []
-}

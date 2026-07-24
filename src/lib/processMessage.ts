@@ -1,7 +1,7 @@
 import { ChannelType, EmbedBuilder, Message, TextChannel, Webhook } from 'discord.js'
 import { config } from '../config.js'
 import { extractPostId, detectCarouselImages } from './carouselDetector.js'
-import { getRewriteChain } from './embedRewrites.js'
+import { EMBED_REWRITE_CHAINS } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed } from './embedDetector.js'
 
@@ -70,7 +70,7 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
   try {
     const url = new URL(match)
     const host = url.hostname.toLowerCase()
-    const chain = getRewriteChain(host)
+    const chain = EMBED_REWRITE_CHAINS[host.toLowerCase()] ?? []
 
     if (chain.length === 0) {
       return { original: match, cleaned: match, alternatives: [] }
@@ -162,7 +162,9 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   if (!anyChanged) return
 
-  console.log(`[CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`)
+  console.log(
+    `[${new Date().toISOString()}] [CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`
+  )
   await msg.delete().catch(() => null)
 
   let clean = original
