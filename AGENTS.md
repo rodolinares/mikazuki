@@ -7,7 +7,7 @@ This file provides guidance to OpenCode when working in this repository.
 A Discord bot that scans messages for URLs and reposts a cleaned version. The bot has four responsibilities:
 
 1. **Tracking parameter removal**: Strip tracking query parameters (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `s`, `sender_device`, `si`, any `utm_*`) from any URL found in a message.
-2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative using priority-ordered fallback chains.
+2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative using priority-ordered fallback chains. Fixer domains posted by users themselves are treated as inputs too: a weaker fixer is upgraded to the most reliable alternative in its chain, while the gold-standard fixer (the chain head) is left untouched.
 3. **Fallback validation**: Validate each rewritten URL via HTTP request before posting, and after posting, verify embed generation. If validation fails or embed doesn't appear, try the next alternative in the chain.
 4. **Carousel detection**: For Instagram posts, detect multi-image carousels and repost each image as a separate embed.
 
@@ -75,12 +75,18 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   // Reddit: rxddit is original
   "reddit.com": ["rxddit.com", "redditez.com", "vxreddit.com", "reddit.com"],
   "www.reddit.com": ["rxddit.com", "redditez.com", "vxreddit.com", "reddit.com"],
+  
+  // Facebook: facebed is the most reliable
+  "facebook.com": ["facebed.com", "fxfb.seria.moe", "facebook.com"],
+  "www.facebook.com": ["facebed.com", "fxfb.seria.moe", "facebook.com"],
 };
 ```
 
-The `getRewriteChain()` function returns the chain for a hostname, or empty array if no rewrite exists.
+The `getRewriteChain()` function returns the chain for a hostname, or empty array if no rewrite exists. It also resolves any fixer domain (every chain element except the last, the canonical original) to its platform's chain, so user-posted fixer URLs are processed like any other input.
 
-Also handles these variant hostnames with the same chains: `m.instagram.com`, `instagr.am`, `www.twitter.com`, `mobile.twitter.com`, `www.tiktok.com`, `vm.tiktok.com`, `m.tiktok.com`, `old.reddit.com`, `m.reddit.com`.
+Also handles these variant hostnames with the same chains: `m.instagram.com`, `instagr.am`, `www.twitter.com`, `mobile.twitter.com`, `www.tiktok.com`, `vm.tiktok.com`, `m.tiktok.com`, `old.reddit.com`, `m.reddit.com`, `m.facebook.com`.
+
+Carousel detection runs only for the Instagram chain — the `facebook.com/reel/` path matches the Instagram post-id regex and must not trigger image probing.
 
 Preserve the path, and any remaining non-tracking query parameters, when rewriting the hostname.
 

@@ -1,7 +1,7 @@
 import { ChannelType, EmbedBuilder, Message, TextChannel, Webhook } from 'discord.js'
 import { config } from '../config.js'
 import { extractPostId, detectCarouselImages } from './carouselDetector.js'
-import { EMBED_REWRITE_CHAINS } from './embedRewrites.js'
+import { EMBED_REWRITE_CHAINS, getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed } from './embedDetector.js'
 
@@ -70,7 +70,7 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
   try {
     const url = new URL(match)
     const host = url.hostname.toLowerCase()
-    const chain = EMBED_REWRITE_CHAINS[host.toLowerCase()] ?? []
+    const chain = getRewriteChain(host)
 
     if (chain.length === 0) {
       return { original: match, cleaned: match, alternatives: [] }
@@ -86,7 +86,8 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
         if (!result.ok) continue
       }
 
-      const postId = extractPostId(url.pathname)
+      const postId =
+        chain === EMBED_REWRITE_CHAINS['instagram.com'] ? extractPostId(url.pathname) : null
       const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
       return {
         original: match,

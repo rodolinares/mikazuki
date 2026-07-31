@@ -10,6 +10,7 @@ const X: string[] = ['fxtwitter.com', 'fixupx.com', 'vxtwitter.com', 'fixvx.com'
 const TWITTER: string[] = ['fxtwitter.com', 'vxtwitter.com', 'fixvx.com', 'twitter.com']
 const TIKTOK: string[] = ['tnktok.com', 'kktiktok.com', 'tfxktok.com', 'tiktok.com']
 const REDDIT: string[] = ['rxddit.com', 'redditez.com', 'vxreddit.com', 'reddit.com']
+const FACEBOOK: string[] = ['facebed.com', 'fxfb.seria.moe', 'facebook.com']
 
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'instagram.com': IG,
@@ -29,5 +30,18 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'reddit.com': REDDIT,
   'www.reddit.com': REDDIT,
   'old.reddit.com': REDDIT,
-  'm.reddit.com': REDDIT
+  'm.reddit.com': REDDIT,
+  'facebook.com': FACEBOOK,
+  'www.facebook.com': FACEBOOK,
+  'm.facebook.com': FACEBOOK
 }
+
+const FIXER_CHAINS = new Map<string, string[]>()
+for (const chain of new Set(Object.values(EMBED_REWRITE_CHAINS))) {
+  for (const fixer of chain.slice(0, -1)) {
+    if (!FIXER_CHAINS.has(fixer)) FIXER_CHAINS.set(fixer, chain)
+  }
+}
+
+export const getRewriteChain = (host: string): string[] =>
+  EMBED_REWRITE_CHAINS[host] ?? FIXER_CHAINS.get(host) ?? []

@@ -7,10 +7,11 @@ Discord bot that cleans URLs in messages — strips tracking parameters, rewrite
 1. Scans messages for URLs
 2. Strips tracking params (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `s`, `sender_device`, `si`, `utm_*`)
 3. Rewrites broken-embed domains using priority-ordered fallback chains
-4. Validates rewritten URLs via HTTP before posting
-5. After posting, polls for embed generation; retries next chain alternative if embed fails
-6. Detects Instagram carousel posts — reposts multi-image carousels as individual embeds
-7. Deletes original + reposts clean version (via webhook impersonation or text attribution)
+4. Recognizes fixer domains users post themselves and upgrades them to the most reliable chain alternative
+5. Validates rewritten URLs via HTTP before posting
+6. After posting, polls for embed generation; retries next chain alternative if embed fails
+7. Detects Instagram carousel posts — reposts multi-image carousels as individual embeds
+8. Deletes original + reposts clean version (via webhook impersonation or text attribution)
 
 ## Supported domains
 
@@ -21,6 +22,9 @@ Discord bot that cleans URLs in messages — strips tracking parameters, rewrite
 | `twitter.com` / `www.` / `mobile.` | `fxtwitter.com` → `vxtwitter.com` → `fixvx.com` → original |
 | `tiktok.com` / `vt.` / `www.` / `vm.` / `m.` | `tnktok.com` → `kktiktok.com` → `tfxktok.com` → original |
 | `reddit.com` / `www.` / `old.` / `m.` | `rxddit.com` → `redditez.com` → `vxreddit.com` → original |
+| `facebook.com` / `www.` / `m.` | `facebed.com` → `fxfb.seria.moe` → original |
+
+Fixer domains (e.g. `ddinstagram.com`, `fxtwitter.com`, `facebed.com`) are also recognized as message URLs — a weaker fixer is upgraded to the best alternative in its chain; the gold-standard fixer is left untouched.
 
 ## Setup
 
