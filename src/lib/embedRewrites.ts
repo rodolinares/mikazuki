@@ -36,6 +36,8 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'm.facebook.com': FACEBOOK
 }
 
+import { prioritizeDomains } from './domainHealth.js'
+
 const FIXER_CHAINS = new Map<string, string[]>()
 for (const chain of new Set(Object.values(EMBED_REWRITE_CHAINS))) {
   for (const fixer of chain.slice(0, -1)) {
@@ -44,4 +46,4 @@ for (const chain of new Set(Object.values(EMBED_REWRITE_CHAINS))) {
 }
 
 export const getRewriteChain = (host: string): string[] =>
-  EMBED_REWRITE_CHAINS[host] ?? FIXER_CHAINS.get(host) ?? []
+  prioritizeDomains(EMBED_REWRITE_CHAINS[host] ?? FIXER_CHAINS.get(host) ?? [])

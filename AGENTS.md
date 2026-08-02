@@ -115,6 +115,7 @@ Optional:
 - `EMBED_WAIT_TIMEOUT` — Embed detection timeout in ms (default: `7000`)
 - `ENABLE_URL_VALIDATION` — Toggle HTTP validation (default: `true`)
 - `ENABLE_EMBED_DETECTION` — Toggle post-send embed checking (default: `true`)
+- `DOMAIN_HEALTH_FILE` — Fixer health state file path (default: `.data/domain-health.json`)
 
 ## Conventions
 

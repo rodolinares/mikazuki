@@ -4,3 +4,10 @@ services:
     container_name: mikazuki
     restart: unless-stopped
     env_file: .env
+    volumes:
+      - health-data:/app/.data
+    environment:
+      - DOMAIN_HEALTH_FILE=/app/.data/domain-health.json
+
+volumes:
+  health-data:

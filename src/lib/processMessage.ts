@@ -1,9 +1,10 @@
 import { ChannelType, EmbedBuilder, Message, TextChannel, Webhook } from 'discord.js'
 import { config } from '../config.js'
 import { extractPostId, detectCarouselImages } from './carouselDetector.js'
-import { EMBED_REWRITE_CHAINS, getRewriteChain } from './embedRewrites.js'
+import { getRewriteChain } from './embedRewrites.js'
 import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed } from './embedDetector.js'
+import { recordFailure, recordSuccess } from './domainHealth.js'
 
 const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
@@ -87,7 +88,7 @@ const cleanUrl = async (match: string): Promise<CleanedUrl> => {
       }
 
       const postId =
-        chain === EMBED_REWRITE_CHAINS['instagram.com'] ? extractPostId(url.pathname) : null
+        chain[chain.length - 1] === 'instagram.com' ? extractPostId(url.pathname) : null
       const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
       return {
         original: match,
@@ -214,10 +215,19 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   const firstHasEmbed = await waitForEmbed(channel, sentMsg.id)
 
-  if (firstHasEmbed) return
+  if (firstHasEmbed) {
+    for (const cleaned of cleanedUrls) {
+      if (cleaned.alternatives.length > 0) {
+        recordSuccess(new URL(cleaned.cleaned).hostname)
+      }
+    }
+    return
+  }
 
   for (const cleaned of cleanedUrls) {
     if (cleaned.alternatives.length === 0) continue
+
+    const firstDomain = new URL(cleaned.cleaned).hostname
 
     let currentUrl = cleaned.cleaned
     for (const alt of cleaned.alternatives) {
@@ -236,7 +246,14 @@ export const processMessage = async (msg: Message): Promise<void> => {
       if (edited) currentUrl = newUrl
 
       const altHasEmbed = await waitForEmbed(channel, sentMsg.id)
-      if (altHasEmbed) return
+      if (altHasEmbed) {
+        recordSuccess(alt)
+        recordFailure(firstDomain)
+        return
+      }
+      recordFailure(alt)
     }
+
+    recordFailure(firstDomain)
   }
 }
