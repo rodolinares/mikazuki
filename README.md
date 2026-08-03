@@ -5,13 +5,12 @@ Discord bot that cleans URLs in messages — strips tracking parameters, rewrite
 ## What it does
 
 1. Scans messages for URLs
-2. Strips tracking params (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `s`, `sender_device`, `si`, `utm_*`)
+2. Strips tracking params (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `sender_device`, `si`, `ttclid`, `msclkid`, `mc_cid`, `mc_eid`, `_hsenc`, `_hsmi`, `gbraid`, `wbraid`, `yclid`, `oly_enc_id`, `oly_anon_id`, `mkt_tok`, `rb_clickid`, `vero_id`, `_openstat`, `dclid`, `cjevent`, `spm`, `scm`, `ref_src`, `ref_url`, `twclid`, `bpctr`, `ucat`, `utm_*`; `s` on X/Twitter only)
 3. Rewrites broken-embed domains using priority-ordered fallback chains
 4. Recognizes fixer domains users post themselves and upgrades them to the most reliable chain alternative
-5. Validates rewritten URLs via HTTP before posting
-6. After posting, polls for embed generation; retries next chain alternative if embed fails
-7. Detects Instagram carousel posts — reposts multi-image carousels as individual embeds
-8. Deletes original + reposts clean version (via webhook impersonation or text attribution)
+5. After posting, polls for embed generation; retries next chain alternative if embed fails
+6. Detects Instagram carousel posts — reposts multi-image carousels as individual embeds
+7. Reposts clean version (re-uploading attachments) then deletes original (via webhook impersonation or text attribution)
 
 ## Supported domains
 
@@ -39,10 +38,9 @@ pnpm dev
 ```
 DISCORD_TOKEN=your-bot-token          # required
 WEBHOOK_IMPERSONATION=true            # repost as author via webhook (default: false)
-URL_VALIDATION_TIMEOUT=3000           # HTTP validation timeout ms (default: 3000)
 EMBED_WAIT_TIMEOUT=7000               # embed poll timeout ms (default: 7000)
-ENABLE_URL_VALIDATION=true            # toggle HTTP validation (default: true)
 ENABLE_EMBED_DETECTION=true           # toggle post-send embed check (default: true)
+CLEAN_CHANNEL_IDS=123,456             # channel allowlist, empty = all channels
 ```
 
 ### Docker

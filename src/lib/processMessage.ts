@@ -2,7 +2,6 @@ import { ChannelType, EmbedBuilder, Message, TextChannel, Webhook } from 'discor
 import { config } from '../config.js'
 import { extractPostId, detectCarouselImages } from './carouselDetector.js'
 import { getRewriteChain } from './embedRewrites.js'
-import { checkHttpStatus } from './urlValidator.js'
 import { waitForEmbed } from './embedDetector.js'
 import { recordFailure, recordSuccess } from './domainHealth.js'
 
@@ -15,24 +14,74 @@ const TRACKING_PARAMS = [
   'igshid',
   'is_from_webapp',
   'ref',
-  's',
   'sender_device',
-  'si'
+  'si',
+  'ttclid',
+  'msclkid',
+  'mc_cid',
+  'mc_eid',
+  '_hsenc',
+  '_hsmi',
+  'gbraid',
+  'wbraid',
+  'yclid',
+  'oly_enc_id',
+  'oly_anon_id',
+  'mkt_tok',
+  'rb_clickid',
+  'vero_id',
+  '_openstat',
+  'dclid',
+  'cjevent',
+  'spm',
+  'scm',
+  'ref_src',
+  'ref_url',
+  'twclid',
+  'bpctr',
+  'ucat'
 ]
 
 const TRACKING_PREFIXES = ['utm_']
 
-const isTrackingParam = (key: string): boolean => {
-  const lower = key.toLowerCase()
-  if (TRACKING_PARAMS.includes(lower)) return true
-  return TRACKING_PREFIXES.some(p => lower.startsWith(p))
+// `s` is WordPress search on most of the web; only a share-tracking param on X/Twitter
+const TRACKING_PARAMS_BY_DOMAIN: Record<string, string[]> = {
+  'x.com': ['s'],
+  'www.x.com': ['s'],
+  'twitter.com': ['s'],
+  'www.twitter.com': ['s'],
+  'mobile.twitter.com': ['s']
 }
 
-export const stripTrackingParams = (url: URL): void => {
+const isTrackingParam = (key: string, host: string): boolean => {
+  const lower = key.toLowerCase()
+  if (TRACKING_PARAMS.includes(lower)) return true
+  if (TRACKING_PREFIXES.some(p => lower.startsWith(p))) return true
+  return (TRACKING_PARAMS_BY_DOMAIN[host] ?? []).includes(lower)
+}
+
+export const stripTrackingParams = (url: URL, host?: string): void => {
+  const h = host ?? url.hostname.toLowerCase()
   for (const key of [...url.searchParams.keys()]) {
-    if (isTrackingParam(key)) url.searchParams.delete(key)
+    if (isTrackingParam(key, h)) url.searchParams.delete(key)
   }
 }
+
+const trimTrailingPunct = (url: string): string => {
+  let trimmed = url.replace(/[.,;!?:'"\u201d\u2019]+$/, '')
+  while (/[)\]]$/.test(trimmed)) {
+    const ch = trimmed[trimmed.length - 1]
+    const open = ch === ')' ? '(' : '['
+    const opens = trimmed.split(open).length - 1
+    const closes = trimmed.split(ch).length - 1
+    if (closes > opens) trimmed = trimmed.slice(0, -1)
+    else break
+  }
+  return trimmed
+}
+
+export const extractUrls = (content: string): string[] =>
+  [...content.matchAll(URL_REGEX)].map(m => trimTrailingPunct(m[0]))
 
 const webhookCache = new Map<string, Webhook>()
 
@@ -70,50 +119,46 @@ interface CleanedUrl {
 const cleanUrl = async (match: string): Promise<CleanedUrl> => {
   try {
     const url = new URL(match)
-    const host = url.hostname.toLowerCase()
-    const chain = getRewriteChain(host)
+    const originalHost = url.hostname.toLowerCase()
+    const chain = getRewriteChain(originalHost)
+
+    const before = url.search
+    stripTrackingParams(url, originalHost)
+    const stripped = url.search !== before
 
     if (chain.length === 0) {
-      return { original: match, cleaned: match, alternatives: [] }
+      return stripped
+        ? { original: match, cleaned: url.toString(), alternatives: [] }
+        : { original: match, cleaned: match, alternatives: [] }
     }
 
-    for (const [i, domain] of chain.entries()) {
-      const testUrl = new URL(url.toString())
-      testUrl.hostname = domain
-      stripTrackingParams(testUrl)
+    const domain = chain[0]
+    const testUrl = new URL(url.toString())
+    testUrl.hostname = domain
 
-      if (config.enableUrlValidation && i > 0) {
-        const result = await checkHttpStatus(testUrl.toString())
-        if (!result.ok) continue
-      }
-
-      const postId =
-        chain[chain.length - 1] === 'instagram.com' ? extractPostId(url.pathname) : null
-      const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
-      return {
-        original: match,
-        cleaned: testUrl.toString(),
-        alternatives: chain.filter(d => d !== domain),
-        carouselImages
-      }
-    }
-
-    const fallbackUrl = new URL(url.toString())
-    stripTrackingParams(fallbackUrl)
+    const postId = chain[chain.length - 1] === 'instagram.com' ? extractPostId(url.pathname) : null
+    const carouselImages = postId ? await detectCarouselImages(postId, domain) : []
     return {
       original: match,
-      cleaned: fallbackUrl.toString(),
-      alternatives: []
+      cleaned: testUrl.toString(),
+      alternatives: chain.filter(d => d !== domain),
+      carouselImages
     }
   } catch {
     return { original: match, cleaned: match, alternatives: [] }
   }
 }
 
+interface RepostFile {
+  attachment: string
+  name?: string
+}
+
 const postMessage = async (
   msg: Message,
   content: string,
-  embeds?: EmbedBuilder[]
+  embeds?: EmbedBuilder[],
+  files?: RepostFile[]
 ): Promise<Message | null> => {
   const webhook = config.webhookImpersonation ? await getOrCreateWebhook(msg) : null
 
@@ -122,6 +167,7 @@ const postMessage = async (
       const sent = await webhook.send({
         content,
         embeds,
+        files,
         username: msg.author.username,
         avatarURL: msg.author.displayAvatarURL()
       })
@@ -136,7 +182,7 @@ const postMessage = async (
       const text = content
         ? `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${content}`
         : ''
-      return await msg.channel.send({ content: text, embeds })
+      return await msg.channel.send({ content: text, embeds, files })
     } catch {
       return null
     }
@@ -147,7 +193,7 @@ const postMessage = async (
 
 export const processMessage = async (msg: Message): Promise<void> => {
   const original = msg.content
-  const urlMatches = [...original.matchAll(URL_REGEX)]
+  const urlMatches = extractUrls(original)
 
   if (urlMatches.length === 0) return
 
@@ -155,7 +201,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
   let anyChanged = false
 
   for (const match of urlMatches) {
-    const cleaned = await cleanUrl(match[0])
+    const cleaned = await cleanUrl(match)
     cleanedUrls.push(cleaned)
     if (cleaned.original !== cleaned.cleaned) {
       anyChanged = true
@@ -168,14 +214,15 @@ export const processMessage = async (msg: Message): Promise<void> => {
     `[${new Date().toLocaleString('sv-SE')}] [CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`
   )
 
-  await msg.delete().catch(() => null)
-
   let clean = original
   for (const cleaned of cleanedUrls) {
     clean = clean.replace(cleaned.original, cleaned.cleaned)
   }
 
+  const files = msg.attachments.map(a => ({ attachment: a.url, name: a.name ?? undefined }))
   const carouselUrls = cleanedUrls.filter(c => c.carouselImages && c.carouselImages.length > 1)
+
+  let sentMsg: Message | null
 
   if (carouselUrls.length > 0) {
     let carouselClean = original
@@ -195,14 +242,16 @@ export const processMessage = async (msg: Message): Promise<void> => {
       }
     }
 
-    await postMessage(msg, carouselClean, embeds)
-
-    return
+    sentMsg = await postMessage(msg, carouselClean, embeds, files)
+  } else {
+    sentMsg = await postMessage(msg, clean, undefined, files)
   }
 
-  const sentMsg = await postMessage(msg, clean)
+  if (!sentMsg) return
+  await msg.delete().catch(() => null)
 
-  if (!sentMsg || !config.enableEmbedDetection) return
+  if (carouselUrls.length > 0) return
+  if (!config.enableEmbedDetection) return
 
   if (
     msg.channel.type !== ChannelType.GuildText &&
@@ -233,12 +282,6 @@ export const processMessage = async (msg: Message): Promise<void> => {
     for (const alt of cleaned.alternatives) {
       const altUrl = new URL(cleaned.cleaned)
       altUrl.hostname = alt
-      stripTrackingParams(altUrl)
-
-      if (config.enableUrlValidation) {
-        const result = await checkHttpStatus(altUrl.toString())
-        if (!result.ok) continue
-      }
 
       const newUrl = altUrl.toString()
       const newContent = sentMsg.content.replace(currentUrl, newUrl)

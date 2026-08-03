@@ -5,10 +5,8 @@ import { config } from '../config.js'
 interface DomainStats {
   successes: number
   failures: number
-  lastUpdated: number
 }
 
-const HALF_LIFE_MS = 7 * 24 * 60 * 60 * 1000
 const SAVE_DEBOUNCE_MS = 1000
 
 const health = new Map<string, DomainStats>()
@@ -33,24 +31,11 @@ const load = (): void => {
   }
 }
 
-const decay = (stats: DomainStats): DomainStats => {
-  const age = Date.now() - stats.lastUpdated
-  if (age <= 0) return stats
-  const factor = Math.pow(0.5, age / HALF_LIFE_MS)
-  return {
-    ...stats,
-    successes: stats.successes * factor,
-    failures: stats.failures * factor,
-    lastUpdated: Date.now()
-  }
-}
-
 const bump = (domain: string, kind: 'successes' | 'failures'): void => {
   load()
   const prev = health.get(domain)
-  const stats = prev ? decay(prev) : { successes: 0, failures: 0, lastUpdated: Date.now() }
+  const stats = prev ?? { successes: 0, failures: 0 }
   stats[kind] += 1
-  stats.lastUpdated = Date.now()
   health.set(domain, stats)
   if (saveTimer) clearTimeout(saveTimer)
   saveTimer = setTimeout(save, SAVE_DEBOUNCE_MS)
@@ -75,10 +60,9 @@ export const getFailureRate = (domain: string): number => {
   load()
   const stats = health.get(domain)
   if (!stats) return 0.5
-  const { successes, failures } = decay(stats)
-  // Laplace prior (1,1): pulls toward 0.5 as counts age/decay, so unknown and stale
-  // health rank neutral instead of being treated as perfect or hopeless
-  return (failures + 1) / (successes + failures + 2)
+  const total = stats.successes + stats.failures
+  if (total === 0) return 0.5
+  return stats.failures / total
 }
 
 export const prioritizeDomains = (domains: string[]): string[] =>

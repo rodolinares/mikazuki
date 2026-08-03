@@ -24,4 +24,30 @@ describe("stripTrackingParams", () => {
     stripTrackingParams(url);
     expect(url.searchParams.toString()).toBe("");
   });
+
+  it("removes expanded tracking params", () => {
+    const url = new URL(
+      "https://example.com/?ttclid=1&msclkid=2&mc_cid=3&mc_eid=4&_hsenc=5&_hsmi=6&gbraid=7&wbraid=8&yclid=9&oly_enc_id=a&oly_anon_id=b&mkt_tok=c&rb_clickid=d&vero_id=e&_openstat=f&dclid=g&cjevent=h&spm=i&scm=j&ref_src=k&ref_url=l&twclid=m&bpctr=n&ucat=o&keep=1"
+    );
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("keep=1");
+  });
+
+  it("strips `s` on x.com", () => {
+    const url = new URL("https://x.com/user/status/1?s=20");
+    stripTrackingParams(url, "x.com");
+    expect(url.searchParams.toString()).toBe("");
+  });
+
+  it("keeps `s` on non-X domains (WordPress search)", () => {
+    const url = new URL("https://wordpress.example/?s=query");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("s=query");
+  });
+
+  it("keeps functional YouTube params", () => {
+    const url = new URL("https://youtube.com/watch?v=abc&list=pl123&t=30&si=xyz");
+    stripTrackingParams(url, "youtube.com");
+    expect(url.searchParams.toString()).toBe("v=abc&list=pl123&t=30");
+  });
 });
