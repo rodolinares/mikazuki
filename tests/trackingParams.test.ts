@@ -39,6 +39,12 @@ describe("stripTrackingParams", () => {
     expect(url.searchParams.toString()).toBe("");
   });
 
+  it("removes mibextid (Meta share)", () => {
+    const url = new URL("https://www.facebook.com/share/r/1D1EeBCt5W/?mibextid=wwXIfr");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("");
+  });
+
   it("keeps `s` on non-X domains (WordPress search)", () => {
     const url = new URL("https://wordpress.example/?s=query");
     stripTrackingParams(url);

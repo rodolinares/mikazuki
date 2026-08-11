@@ -39,7 +39,8 @@ const TRACKING_PARAMS = [
   'ref_url',
   'twclid',
   'bpctr',
-  'ucat'
+  'ucat',
+  'mibextid'
 ]
 
 const TRACKING_PREFIXES = ['utm_']
