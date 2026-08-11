@@ -45,11 +45,13 @@ src/
     carouselDetector.ts # Instagram carousel multi-image detection via image probing
     processMessage.ts  # Orchestrates everything: URL extraction, tracking stripping, rewriting, embed fallback, carousel handling, reposting
     domainHealth.ts    # Fixer success/failure counters + chain prioritization
+    linkLog.ts         # JSONL audit log of rewritten URLs (one line per URL, per-fixer outcomes)
 tests/
   embedRewrites.test.ts
   trackingParams.test.ts
   urlExtraction.test.ts
   domainHealth.test.ts
+  linkLog.test.ts
 ```
 
 Tracking params and URL regex are defined inline in `src/lib/processMessage.ts` — not in separate files.
@@ -96,6 +98,10 @@ Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) 
 
 After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 7000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message. This is the ground-truth check — rewritten URLs are not HTTP-validated before posting.
 
+### Link Audit Log (`src/lib/linkLog.ts`)
+
+Append-only JSONL log, one entry per rewritten URL: `{ts, host, path, chain, outcome, winner, attempts, kind?}`. `attempts` records each fixer tried and whether it produced an embed; `kind: 'carousel'` marks Instagram multi-image posts (no embed check). Host + path only — no author, channel, or message text. Used to correlate content type (via `path`, e.g. `/reel/` vs `/p/`) with per-fixer outcomes. No entry is written when embed detection is disabled or the repost fails.
+
 ## Environment Variables
 
 Required:
@@ -106,6 +112,7 @@ Optional:
 - `EMBED_WAIT_TIMEOUT` — Embed detection timeout in ms (default: `7000`)
 - `ENABLE_EMBED_DETECTION` — Toggle post-send embed checking (default: `true`)
 - `DOMAIN_HEALTH_FILE` — Fixer health state file path (default: `.data/domain-health.json`)
+- `LINK_LOG_FILE` — JSONL audit log of rewritten URLs (default: `.data/link-log.jsonl`)
 - `CLEAN_CHANNEL_IDS` — Comma-separated channel allowlist; empty means all channels
 
 ## Conventions

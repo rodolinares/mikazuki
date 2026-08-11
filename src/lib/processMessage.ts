@@ -4,6 +4,7 @@ import { extractPostId, detectCarouselImages } from './carouselDetector.js'
 import { getRewriteChain } from './embedRewrites.js'
 import { waitForEmbed } from './embedDetector.js'
 import { recordFailure, recordSuccess } from './domainHealth.js'
+import { appendEntry, buildEntry } from './linkLog.js'
 
 const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
@@ -251,7 +252,13 @@ export const processMessage = async (msg: Message): Promise<void> => {
   if (!sentMsg) return
   await msg.delete().catch(() => null)
 
-  if (carouselUrls.length > 0) return
+  if (carouselUrls.length > 0) {
+    for (const c of carouselUrls) {
+      const host = new URL(c.cleaned).hostname
+      appendEntry(buildEntry(c.cleaned, [host, ...c.alternatives], 'success', [], host, 'carousel'))
+    }
+    return
+  }
   if (!config.enableEmbedDetection) return
 
   if (
@@ -267,9 +274,18 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   if (firstHasEmbed) {
     for (const cleaned of cleanedUrls) {
-      if (cleaned.alternatives.length > 0) {
-        recordSuccess(new URL(cleaned.cleaned).hostname)
-      }
+      if (cleaned.alternatives.length === 0) continue
+      const firstDomain = new URL(cleaned.cleaned).hostname
+      recordSuccess(firstDomain)
+      appendEntry(
+        buildEntry(
+          cleaned.cleaned,
+          [firstDomain, ...cleaned.alternatives],
+          'success',
+          [{ domain: firstDomain, embed: true }],
+          firstDomain
+        )
+      )
     }
     return
   }
@@ -278,6 +294,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
     if (cleaned.alternatives.length === 0) continue
 
     const firstDomain = new URL(cleaned.cleaned).hostname
+    const attempts: { domain: string; embed: boolean }[] = [{ domain: firstDomain, embed: false }]
 
     let currentUrl = cleaned.cleaned
     for (const alt of cleaned.alternatives) {
@@ -293,11 +310,24 @@ export const processMessage = async (msg: Message): Promise<void> => {
       if (altHasEmbed) {
         recordSuccess(alt)
         recordFailure(firstDomain)
+        appendEntry(
+          buildEntry(
+            cleaned.cleaned,
+            [firstDomain, ...cleaned.alternatives],
+            'success',
+            [...attempts, { domain: alt, embed: true }],
+            alt
+          )
+        )
         return
       }
       recordFailure(alt)
+      attempts.push({ domain: alt, embed: false })
     }
 
     recordFailure(firstDomain)
+    appendEntry(
+      buildEntry(cleaned.cleaned, [firstDomain, ...cleaned.alternatives], 'failure', attempts, null)
+    )
   }
 }
