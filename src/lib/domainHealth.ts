@@ -9,11 +9,8 @@ interface DomainStats {
 
 export const ORIGINAL_DOMAINS = new Set<string>()
 
-const SAVE_DEBOUNCE_MS = 1000
-
 const health = new Map<string, DomainStats>()
 let loaded = false
-let saveTimer: ReturnType<typeof setTimeout> | null = null
 
 const load = (): void => {
   if (loaded) return
@@ -40,12 +37,11 @@ const bump = (domain: string, kind: 'successes' | 'failures'): void => {
   const stats = prev ?? { successes: 0, failures: 0 }
   stats[kind] += 1
   health.set(domain, stats)
-  if (saveTimer) clearTimeout(saveTimer)
-  saveTimer = setTimeout(save, SAVE_DEBOUNCE_MS)
+  save()
 }
 
 // ponytail: best-effort persistence; health loss is non-critical, never crash the bot for it
-export const save = (): void => {
+const save = (): void => {
   load()
   try {
     const data = Object.fromEntries([...health].filter(([domain]) => !ORIGINAL_DOMAINS.has(domain)))
@@ -73,11 +69,5 @@ export const prioritizeDomains = (domains: string[]): string[] =>
 
 export const clearAll = (): void => {
   load()
-  if (saveTimer) clearTimeout(saveTimer)
   health.clear()
 }
-
-process.once('exit', () => {
-  if (saveTimer) clearTimeout(saveTimer)
-  save()
-})

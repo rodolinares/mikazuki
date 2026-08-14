@@ -1,13 +1,6 @@
 import { describe, it, expect, vi, beforeEach, afterEach } from 'vitest'
 import fs from 'fs'
-import {
-  recordSuccess,
-  recordFailure,
-  getFailureRate,
-  prioritizeDomains,
-  save,
-  clearAll
-} from '../src/lib/domainHealth.js'
+import { recordSuccess, recordFailure, getFailureRate, prioritizeDomains, clearAll } from '../src/lib/domainHealth.js'
 
 vi.mock('../src/config.js', () => ({
   config: { domainHealthFile: '/tmp/mikazuki-domain-health-test.json' }
@@ -59,7 +52,6 @@ describe('domainHealth', () => {
     expect(getFailureRate('instagram.com')).toBe(0.5)
 
     recordSuccess('ddinstagram.com')
-    save()
 
     const disk = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'))
     expect(disk['ddinstagram.com']).toBeDefined()
@@ -70,7 +62,6 @@ describe('domainHealth', () => {
     recordSuccess('good.com')
     recordFailure('good.com')
     recordFailure('good.com')
-    save()
 
     const disk = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'))
     expect(disk['good.com'].failures).toBe(2)

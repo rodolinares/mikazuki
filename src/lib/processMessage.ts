@@ -48,17 +48,16 @@ const TRACKING_PREFIXES = ['utm_']
 // `s` is WordPress search on most of the web; only a share-tracking param on X/Twitter
 const TRACKING_PARAMS_BY_DOMAIN: Record<string, string[]> = {
   'x.com': ['s'],
-  'www.x.com': ['s'],
-  'twitter.com': ['s'],
-  'www.twitter.com': ['s'],
-  'mobile.twitter.com': ['s']
+  'twitter.com': ['s']
 }
 
 const isTrackingParam = (key: string, host: string): boolean => {
   const lower = key.toLowerCase()
   if (TRACKING_PARAMS.includes(lower)) return true
   if (TRACKING_PREFIXES.some(p => lower.startsWith(p))) return true
-  return (TRACKING_PARAMS_BY_DOMAIN[host] ?? []).includes(lower)
+  return Object.entries(TRACKING_PARAMS_BY_DOMAIN).some(
+    ([domain, params]) => (host === domain || host.endsWith(`.${domain}`)) && params.includes(lower)
+  )
 }
 
 export const stripTrackingParams = (url: URL, host?: string): void => {

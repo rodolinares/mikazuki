@@ -1,4 +1,4 @@
-import { TextChannel } from 'discord.js'
+import { Message, TextChannel } from 'discord.js'
 import { config } from '../config.js'
 
 const PLACEHOLDER_EMBED_IMAGES = ['facecot.com/og.png']
@@ -20,10 +20,12 @@ export async function waitForEmbed(channel: TextChannel, messageId: string): Pro
   const timeout = config.embedWaitTimeout
   const checkInterval = 500
   const startTime = Date.now()
+  let lastMessage: Message | null = null
 
   while (Date.now() - startTime < timeout) {
     try {
       const message = await channel.messages.fetch({ message: messageId, force: true })
+      lastMessage = message
       if (hasRealEmbed(message.embeds)) return true
     } catch {
       return false
@@ -31,12 +33,9 @@ export async function waitForEmbed(channel: TextChannel, messageId: string): Pro
     await new Promise(resolve => setTimeout(resolve, checkInterval))
   }
 
-  const message = await channel.messages
-    .fetch({ message: messageId, force: true })
-    .catch(() => null)
   console.debug(
     `[embedDetector] no embed after ${timeout}ms (message ${messageId}):`,
-    message?.embeds.map(e => ({
+    lastMessage?.embeds.map(e => ({
       image: !!e.image,
       thumbnail: !!e.thumbnail,
       video: !!e.video
