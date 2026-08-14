@@ -96,7 +96,7 @@ Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) 
 
 ### Embed Detection (`src/lib/embedDetector.ts`)
 
-After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 7000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message. This is the ground-truth check — rewritten URLs are not HTTP-validated before posting.
+After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 20000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message. This is the ground-truth check — rewritten URLs are not HTTP-validated before posting.
 
 ### Link Audit Log (`src/lib/linkLog.ts`)
 
@@ -109,7 +109,7 @@ Required:
 
 Optional:
 - `WEBHOOK_IMPERSONATION` — Repost as original author via webhook (default: `false`)
-- `EMBED_WAIT_TIMEOUT` — Embed detection timeout in ms (default: `7000`)
+- `EMBED_WAIT_TIMEOUT` — Embed detection timeout in ms (default: `20000`)
 - `ENABLE_EMBED_DETECTION` — Toggle post-send embed checking (default: `true`)
 - `DOMAIN_HEALTH_FILE` — Fixer health state file path (default: `.data/domain-health.json`)
 - `LINK_LOG_FILE` — JSONL audit log of rewritten URLs (default: `.data/link-log.jsonl`)

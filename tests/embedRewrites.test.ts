@@ -25,8 +25,8 @@ describe('getRewriteChain', () => {
   it('returns the chain for original domains', () => {
     expect(getRewriteChain('instagram.com')).toEqual(EMBED_REWRITE_CHAINS['instagram.com'])
     expect(getRewriteChain('facebook.com')).toEqual([
+      'facecot.com',
       'facebed.com',
-      'fxfb.seria.moe',
       'facebook.com'
     ])
   })

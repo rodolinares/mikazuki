@@ -1,6 +1,6 @@
 const IG: string[] = [
-  'ddinstagram.com',
   'uuinstagram.com',
+  'ddinstagram.com',
   'xnstagram.com',
   'kkinstagram.com',
   'eeinstagram.com',
@@ -9,8 +9,8 @@ const IG: string[] = [
 const X: string[] = ['fxtwitter.com', 'fixupx.com', 'vxtwitter.com', 'fixvx.com', 'x.com']
 const TWITTER: string[] = ['fxtwitter.com', 'vxtwitter.com', 'fixvx.com', 'twitter.com']
 const TIKTOK: string[] = ['tnktok.com', 'kktiktok.com', 'tfxktok.com', 'tiktok.com']
-const REDDIT: string[] = ['rxddit.com', 'redditez.com', 'vxreddit.com', 'reddit.com']
-const FACEBOOK: string[] = ['facebed.com', 'fxfb.seria.moe', 'facebook.com']
+const REDDIT: string[] = ['redditez.com', 'rxddit.com', 'vxreddit.com', 'reddit.com']
+const FACEBOOK: string[] = ['facecot.com', 'facebed.com', 'facebook.com']
 
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   'instagram.com': IG,
