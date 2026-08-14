@@ -52,6 +52,20 @@ describe('domainHealth', () => {
     expect(ordered[2]).toBe('bad.example')
   })
 
+  it('never records original (chain tail) domains', async () => {
+    await import('../src/lib/embedRewrites.js')
+    recordFailure('instagram.com')
+    recordSuccess('instagram.com')
+    expect(getFailureRate('instagram.com')).toBe(0.5)
+
+    recordSuccess('ddinstagram.com')
+    save()
+
+    const disk = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'))
+    expect(disk['ddinstagram.com']).toBeDefined()
+    expect(disk['instagram.com']).toBeUndefined()
+  })
+
   it('writes state to disk on save and reloads it', async () => {
     recordSuccess('good.com')
     recordFailure('good.com')

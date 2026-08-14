@@ -7,6 +7,8 @@ interface DomainStats {
   failures: number
 }
 
+export const ORIGINAL_DOMAINS = new Set<string>()
+
 const SAVE_DEBOUNCE_MS = 1000
 
 const health = new Map<string, DomainStats>()
@@ -33,6 +35,7 @@ const load = (): void => {
 
 const bump = (domain: string, kind: 'successes' | 'failures'): void => {
   load()
+  if (ORIGINAL_DOMAINS.has(domain)) return
   const prev = health.get(domain)
   const stats = prev ?? { successes: 0, failures: 0 }
   stats[kind] += 1
@@ -45,7 +48,7 @@ const bump = (domain: string, kind: 'successes' | 'failures'): void => {
 export const save = (): void => {
   load()
   try {
-    const data = Object.fromEntries(health)
+    const data = Object.fromEntries([...health].filter(([domain]) => !ORIGINAL_DOMAINS.has(domain)))
     fs.mkdirSync(path.dirname(config.domainHealthFile), { recursive: true })
     fs.writeFileSync(config.domainHealthFile, JSON.stringify(data, null, 2))
   } catch {

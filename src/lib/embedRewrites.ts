@@ -39,10 +39,11 @@ const CHAIN_ALIASES: Record<string, string> = {
   'm.facebook.com': 'facebook.com'
 }
 
-import { prioritizeDomains } from './domainHealth.js'
+import { ORIGINAL_DOMAINS, prioritizeDomains } from './domainHealth.js'
 
 const FIXER_CHAINS = new Map<string, string[]>()
 for (const chain of new Set(Object.values(EMBED_REWRITE_CHAINS))) {
+  ORIGINAL_DOMAINS.add(chain[chain.length - 1])
   for (const fixer of chain.slice(0, -1)) {
     if (!FIXER_CHAINS.has(fixer)) FIXER_CHAINS.set(fixer, chain)
   }
