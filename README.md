@@ -1,6 +1,6 @@
 # Mikazuki
 
-Discord bot that cleans URLs in messages — strips tracking parameters, rewrites domains to embed-friendly alternatives, and detects Instagram carousels.
+Discord bot that cleans URLs in messages — strips tracking parameters and rewrites domains to embed-friendly alternatives.
 
 ## What it does
 
@@ -9,8 +9,7 @@ Discord bot that cleans URLs in messages — strips tracking parameters, rewrite
 3. Rewrites broken-embed domains using priority-ordered fallback chains
 4. Recognizes fixer domains users post themselves and upgrades them to the most reliable chain alternative
 5. After posting, polls for embed generation; retries next chain alternative if embed fails
-6. Detects Instagram carousel posts — reposts multi-image carousels as individual embeds
-7. Reposts clean version (re-uploading attachments) then deletes original (via webhook impersonation or text attribution)
+6. Reposts clean version (re-uploading attachments) then deletes original
 
 ## Supported domains
 
@@ -37,7 +36,6 @@ pnpm dev
 
 ```
 DISCORD_TOKEN=your-bot-token          # required
-WEBHOOK_IMPERSONATION=true            # repost as author via webhook (default: false)
 EMBED_WAIT_TIMEOUT=7000               # embed poll timeout ms (default: 7000)
 ENABLE_EMBED_DETECTION=true           # toggle post-send embed check (default: true)
 CLEAN_CHANNEL_IDS=123,456             # channel allowlist, empty = all channels

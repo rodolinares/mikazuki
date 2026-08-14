@@ -44,16 +44,4 @@ describe('linkLog.buildEntry', () => {
     expect(entry.winner).toBeNull()
     expect(entry.attempts).toEqual([{ domain: 'facebed.com', embed: false }])
   })
-
-  it('marks carousel entries with kind', () => {
-    const entry = buildEntry(
-      'https://ddinstagram.com/p/abc123/',
-      ['ddinstagram.com', 'instagram.com'],
-      'success',
-      [],
-      'ddinstagram.com',
-      'carousel'
-    )
-    expect(entry.kind).toBe('carousel')
-  })
 })

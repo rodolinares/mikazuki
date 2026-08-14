@@ -10,7 +10,6 @@ export interface LinkLogEntry {
   outcome: 'success' | 'failure'
   winner: string | null
   attempts: { domain: string; embed: boolean }[]
-  kind?: 'carousel'
 }
 
 export const buildEntry = (
@@ -18,8 +17,7 @@ export const buildEntry = (
   chain: string[],
   outcome: 'success' | 'failure',
   attempts: { domain: string; embed: boolean }[],
-  winner: string | null,
-  kind?: 'carousel'
+  winner: string | null
 ): LinkLogEntry => {
   const u = new URL(url)
   return {
@@ -29,8 +27,7 @@ export const buildEntry = (
     chain: [...chain],
     outcome,
     winner,
-    attempts,
-    kind
+    attempts
   }
 }
 

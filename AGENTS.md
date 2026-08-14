@@ -9,7 +9,6 @@ A Discord bot that scans messages for URLs and reposts a cleaned version. The bo
 1. **Tracking parameter removal**: Strip tracking query parameters (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `sender_device`, `si`, `ttclid`, `msclkid`, `mc_cid`, `mc_eid`, `_hsenc`, `_hsmi`, `gbraid`, `wbraid`, `yclid`, `oly_enc_id`, `oly_anon_id`, `mkt_tok`, `rb_clickid`, `vero_id`, `_openstat`, `dclid`, `cjevent`, `spm`, `scm`, `ref_src`, `ref_url`, `twclid`, `bpctr`, `ucat`, any `utm_*`) from any URL found in a message. `s` is domain-scoped to X/Twitter hosts (it's WordPress search elsewhere).
 2. **Embed-fixing rewrites**: If a URL's domain is known to produce a broken or missing embed on Discord, rewrite the domain to a known embed-friendly alternative using priority-ordered fallback chains. Fixer domains posted by users themselves are treated as inputs too: a weaker fixer is upgraded to the most reliable alternative in its chain, while the gold-standard fixer (the chain head) is left untouched.
 3. **Fallback validation**: After posting, verify embed generation. If the embed doesn't appear, try the next alternative in the chain.
-4. **Carousel detection**: For Instagram posts, detect multi-image carousels and repost each image as a separate embed.
 
 If a message's URLs required any change, the bot reposts the cleaned content first (attributed to the original author, re-uploading any attachments), then deletes the original message. If no changes were needed, the bot takes no action.
 
@@ -42,8 +41,7 @@ src/
   lib/
     embedRewrites.ts   # EMBED_REWRITE_CHAINS map + CHAIN_ALIASES + getRewriteChain()
     embedDetector.ts   # Post-send embed detection with polling
-    carouselDetector.ts # Instagram carousel multi-image detection via image probing
-    processMessage.ts  # Orchestrates everything: URL extraction, tracking stripping, rewriting, embed fallback, carousel handling, reposting
+    processMessage.ts  # Orchestrates everything: URL extraction, tracking stripping, rewriting, embed fallback, reposting
     domainHealth.ts    # Fixer success/failure counters + chain prioritization
     linkLog.ts         # JSONL audit log of rewritten URLs (one line per URL, per-fixer outcomes)
 tests/
@@ -100,7 +98,7 @@ After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 20
 
 ### Link Audit Log (`src/lib/linkLog.ts`)
 
-Append-only JSONL log, one entry per rewritten URL: `{ts, host, path, chain, outcome, winner, attempts, kind?}`. `attempts` records each fixer tried and whether it produced an embed; `kind: 'carousel'` marks Instagram multi-image posts (no embed check). Host + path only — no author, channel, or message text. Used to correlate content type (via `path`, e.g. `/reel/` vs `/p/`) with per-fixer outcomes. No entry is written when embed detection is disabled or the repost fails.
+Append-only JSONL log, one entry per rewritten URL: `{ts, host, path, chain, outcome, winner, attempts}`. `attempts` records each fixer tried and whether it produced an embed. Host + path only — no author, channel, or message text. Used to correlate content type (via `path`, e.g. `/reel/` vs `/p/`) with per-fixer outcomes. No entry is written when embed detection is disabled or the repost fails.
 
 ## Environment Variables
 
@@ -108,7 +106,6 @@ Required:
 - `DISCORD_TOKEN` — Discord bot token
 
 Optional:
-- `WEBHOOK_IMPERSONATION` — Repost as original author via webhook (default: `false`)
 - `EMBED_WAIT_TIMEOUT` — Embed detection timeout in ms (default: `20000`)
 - `ENABLE_EMBED_DETECTION` — Toggle post-send embed checking (default: `true`)
 - `DOMAIN_HEALTH_FILE` — Fixer health state file path (default: `.data/domain-health.json`)

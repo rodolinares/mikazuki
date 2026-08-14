@@ -37,7 +37,6 @@ export async function waitForEmbed(channel: TextChannel, messageId: string): Pro
   console.debug(
     `[embedDetector] no embed after ${timeout}ms (message ${messageId}):`,
     message?.embeds.map(e => ({
-      type: e.type,
       image: !!e.image,
       thumbnail: !!e.thumbnail,
       video: !!e.video
