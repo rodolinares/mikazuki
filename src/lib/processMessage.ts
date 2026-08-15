@@ -228,6 +228,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
       if (altHasEmbed) {
         recordSuccess(alt)
         recordFailure(firstDomain)
+        for (const failed of attempts.slice(1)) recordFailure(failed.domain)
         appendEntry(
           buildEntry(
             cleaned.cleaned,
@@ -239,13 +240,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
         )
         return
       }
-      recordFailure(alt)
       attempts.push({ domain: alt, embed: false })
     }
-
-    recordFailure(firstDomain)
-    appendEntry(
-      buildEntry(cleaned.cleaned, [firstDomain, ...cleaned.alternatives], 'failure', attempts, null)
-    )
   }
 }

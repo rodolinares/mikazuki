@@ -33,7 +33,7 @@ describe('getRewriteChain', () => {
 
   it('resolves fixer domains to their platform chain', () => {
     expect(getRewriteChain('vxtwitter.com')).toEqual(getRewriteChain('x.com'))
-    expect(getRewriteChain('ddinstagram.com')).toEqual(getRewriteChain('instagram.com'))
+    expect(getRewriteChain('kkinstagram.com')).toEqual(getRewriteChain('instagram.com'))
     expect(getRewriteChain('facebed.com')).toEqual(getRewriteChain('facebook.com'))
   })
 

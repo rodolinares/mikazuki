@@ -1,11 +1,4 @@
-const IG: string[] = [
-  'uuinstagram.com',
-  'ddinstagram.com',
-  'xnstagram.com',
-  'kkinstagram.com',
-  'eeinstagram.com',
-  'instagram.com'
-]
+const IG: string[] = ['uuinstagram.com', 'kkinstagram.com', 'instagram.com']
 const X: string[] = ['fxtwitter.com', 'fixupx.com', 'vxtwitter.com', 'fixvx.com', 'x.com']
 const TWITTER: string[] = ['fxtwitter.com', 'vxtwitter.com', 'fixvx.com', 'twitter.com']
 const TIKTOK: string[] = ['tnktok.com', 'kktiktok.com', 'tfxktok.com', 'tiktok.com']
