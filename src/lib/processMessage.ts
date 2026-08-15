@@ -132,7 +132,7 @@ const postMessage = async (
   if ('send' in msg.channel) {
     try {
       const text = content
-        ? `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${content}`
+        ? `🧹 Link cleaned - originally shared by <@${msg.author.id}>\n> ${content.replace(/\n/g, '\n> ')}`
         : ''
       return await msg.channel.send({ content: text, files })
     } catch {
