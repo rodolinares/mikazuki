@@ -1,0 +1,18 @@
+[Unit]
+Description=Mikazuki Discord Bot
+After=network-online.target
+Wants=network-online.target
+
+[Service]
+Type=simple
+User=mikazuki
+WorkingDirectory=/opt/mikazuki
+ExecStart=/usr/bin/node dist/index.js
+Restart=always
+RestartSec=5
+EnvironmentFile=/opt/mikazuki/.env
+StandardOutput=journal
+StandardError=journal
+
+[Install]
+WantedBy=multi-user.target

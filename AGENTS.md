@@ -36,9 +36,10 @@ Always use `pnpm` for adding, removing, or updating dependencies (`pnpm add`, `p
 
 ```
 src/
-  index.ts            # Bot entry point, client login, event registration, MessageCreate/MessageUpdate handlers
+  index.ts            # Bot entry point, client login, event registration, error handlers, heartbeat
   config.ts           # Environment variable loading and validation (uses --env-file=.env)
   lib/
+    logger.ts          # Structured logging (JSON in production, colored text in TTY)
     embedRewrites.ts   # EMBED_REWRITE_CHAINS map + CHAIN_ALIASES + getRewriteChain()
     embedDetector.ts   # Post-send embed detection with polling
     processMessage.ts  # Orchestrates everything: URL extraction, tracking stripping, rewriting, embed fallback, reposting
@@ -111,6 +112,7 @@ Optional:
 - `DOMAIN_HEALTH_FILE` — Fixer health state file path (default: `.data/domain-health.json`)
 - `LINK_LOG_FILE` — JSONL audit log of rewritten URLs (default: `.data/link-log.jsonl`)
 - `CLEAN_CHANNEL_IDS` — Comma-separated channel allowlist; empty means all channels
+- `HEARTBEAT_FILE` — Path to heartbeat touch-file (default: `/tmp/mikazuki-alive`)
 
 ## Conventions
 

@@ -8,6 +8,11 @@ services:
       - health-data:/app/.data
     environment:
       - DOMAIN_HEALTH_FILE=/app/.data/domain-health.json
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   health-data:

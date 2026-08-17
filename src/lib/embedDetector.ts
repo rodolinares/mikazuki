@@ -1,5 +1,6 @@
 import { Message, TextChannel } from 'discord.js'
 import { config } from '../config.js'
+import { logDebug } from './logger.js'
 
 const PLACEHOLDER_EMBED_IMAGES = ['facecot.com/og.png']
 
@@ -33,14 +34,15 @@ export async function waitForEmbed(channel: TextChannel, messageId: string): Pro
     await new Promise(resolve => setTimeout(resolve, checkInterval))
   }
 
-  console.debug(
-    `[embedDetector] no embed after ${timeout}ms (message ${messageId}):`,
-    lastMessage?.embeds.map(e => ({
+  logDebug('no embed', {
+    messageId,
+    timeout,
+    embeds: lastMessage?.embeds.map(e => ({
       image: !!e.image,
       thumbnail: !!e.thumbnail,
       video: !!e.video
     }))
-  )
+  })
 
   return false
 }

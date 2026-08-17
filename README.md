@@ -36,9 +36,10 @@ pnpm dev
 
 ```
 DISCORD_TOKEN=your-bot-token          # required
-EMBED_WAIT_TIMEOUT=7000               # embed poll timeout ms (default: 7000)
+EMBED_WAIT_TIMEOUT=20000              # embed poll timeout ms (default: 20000)
 ENABLE_EMBED_DETECTION=true           # toggle post-send embed check (default: true)
 CLEAN_CHANNEL_IDS=123,456             # channel allowlist, empty = all channels
+HEARTBEAT_FILE=/tmp/mikazuki-alive    # health check file (default: /tmp/mikazuki-alive)
 ```
 
 ### Docker
@@ -46,6 +47,10 @@ CLEAN_CHANNEL_IDS=123,456             # channel allowlist, empty = all channels
 ```bash
 docker compose up -d
 ```
+
+### Deployment
+
+See [DEPLOYMENT.md](DEPLOYMENT.md) for systemd setup, log management, and health checks.
 
 ## Commands
 

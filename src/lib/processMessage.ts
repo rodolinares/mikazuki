@@ -4,6 +4,7 @@ import { getRewriteChain } from './embedRewrites.js'
 import { waitForEmbed } from './embedDetector.js'
 import { recordFailure, recordSuccess } from './domainHealth.js'
 import { appendEntry, buildEntry } from './linkLog.js'
+import { logInfo } from './logger.js'
 
 const URL_REGEX = /https?:\/\/[^\s<>"]+/g
 
@@ -162,9 +163,7 @@ export const processMessage = async (msg: Message): Promise<void> => {
 
   if (!anyChanged) return
 
-  console.log(
-    `[${new Date().toLocaleString('sv-SE')}] [CLEAN] #${msg.channelId} @${msg.author.username}: ${original}`
-  )
+  logInfo('clean', { channelId: msg.channelId, author: msg.author.username, content: original })
 
   let clean = original
   for (const cleaned of cleanedUrls) {
