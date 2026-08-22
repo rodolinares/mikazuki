@@ -51,10 +51,10 @@ describe('domainHealth', () => {
     recordSuccess('instagram.com')
     expect(getFailureRate('instagram.com')).toBe(0.5)
 
-    recordSuccess('ddinstagram.com')
+    recordSuccess('uuinstagram.com')
 
     const disk = JSON.parse(fs.readFileSync(STATE_PATH, 'utf8'))
-    expect(disk['ddinstagram.com']).toBeDefined()
+    expect(disk['uuinstagram.com']).toBeDefined()
     expect(disk['instagram.com']).toBeUndefined()
   })
 

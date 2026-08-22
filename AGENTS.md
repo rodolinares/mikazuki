@@ -61,8 +61,8 @@ Maintain the domain rewrite chains as a single exported object in `src/lib/embed
 
 ```typescript
 export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
-  // Instagram: ddinstagram is most established
-  "instagram.com": ["ddinstagram.com", "uuinstagram.com", "xnstagram.com", "kkinstagram.com", "eeinstagram.com", "instagram.com"],
+  // Instagram
+  "instagram.com": ["uuinstagram.com", "kkinstagram.com", "instagram.com"],
   
   // Twitter/X: fxtwitter is gold standard
   "x.com": ["fxtwitter.com", "fixupx.com", "vxtwitter.com", "fixvx.com", "x.com"],
@@ -71,11 +71,11 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
   // TikTok: tnktok is open source best
   "tiktok.com": ["tnktok.com", "kktiktok.com", "tfxktok.com", "tiktok.com"],
   
-  // Reddit: rxddit is original
-  "reddit.com": ["rxddit.com", "redditez.com", "vxreddit.com", "reddit.com"],
+  // Reddit
+  "reddit.com": ["redditez.com", "rxddit.com", "vxreddit.com", "reddit.com"],
   
-  // Facebook: facebed is the most reliable
-  "facebook.com": ["facebed.com", "fxfb.seria.moe", "facebook.com"],
+  // Facebook
+  "facebook.com": ["facecot.com", "facebed.com", "facebook.com"],
 };
 ```
 

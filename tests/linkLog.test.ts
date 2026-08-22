@@ -23,11 +23,11 @@ describe('linkLog.buildEntry', () => {
 
   it('preserves query string in path for content-type analysis', () => {
     const entry = buildEntry(
-      'https://ddinstagram.com/p/abc123/?img_index=1',
-      ['ddinstagram.com', 'instagram.com'],
+      'https://kkinstagram.com/p/abc123/?img_index=1',
+      ['kkinstagram.com', 'instagram.com'],
       'success',
       [],
-      'ddinstagram.com'
+      'kkinstagram.com'
     )
     expect(entry.path).toBe('/p/abc123/')
   })

@@ -15,14 +15,14 @@ Discord bot that cleans URLs in messages — strips tracking parameters and rewr
 
 | Original | Fallback chain |
 |---|---|
-| `instagram.com` / `www.` / `m.` / `instagr.am` | `ddinstagram.com` → `uuinstagram.com` → `xnstagram.com` → `kkinstagram.com` → `eeinstagram.com` → original |
+| `instagram.com` / `www.` / `m.` / `instagr.am` | `uuinstagram.com` → `kkinstagram.com` → original |
 | `x.com` / `www.` | `fxtwitter.com` → `fixupx.com` → `vxtwitter.com` → `fixvx.com` → original |
 | `twitter.com` / `www.` / `mobile.` | `fxtwitter.com` → `vxtwitter.com` → `fixvx.com` → original |
 | `tiktok.com` / `vt.` / `www.` / `vm.` / `m.` | `tnktok.com` → `kktiktok.com` → `tfxktok.com` → original |
-| `reddit.com` / `www.` / `old.` / `m.` | `rxddit.com` → `redditez.com` → `vxreddit.com` → original |
-| `facebook.com` / `www.` / `m.` | `facebed.com` → `fxfb.seria.moe` → original |
+| `reddit.com` / `www.` / `old.` / `m.` | `redditez.com` → `rxddit.com` → `vxreddit.com` → original |
+| `facebook.com` / `www.` / `m.` | `facecot.com` → `facebed.com` → original |
 
-Fixer domains (e.g. `ddinstagram.com`, `fxtwitter.com`, `facebed.com`) are also recognized as message URLs — a weaker fixer is upgraded to the best alternative in its chain; the gold-standard fixer is left untouched.
+Fixer domains (e.g. `fxtwitter.com`, `facebed.com`) are also recognized as message URLs — a weaker fixer is upgraded to the best alternative in its chain; the gold-standard fixer is left untouched.
 
 ## Setup
 
