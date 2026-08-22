@@ -45,6 +45,12 @@ describe("stripTrackingParams", () => {
     expect(url.searchParams.toString()).toBe("");
   });
 
+  it("removes igsi (Instagram share)", () => {
+    const url = new URL("https://www.instagram.com/p/abc123/?igsi=x&igsh=y&utm_source=ig");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("");
+  });
+
   it("keeps `s` on non-X domains (WordPress search)", () => {
     const url = new URL("https://wordpress.example/?s=query");
     stripTrackingParams(url);

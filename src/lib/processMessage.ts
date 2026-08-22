@@ -13,6 +13,7 @@ const TRACKING_PARAMS = [
   'gclid',
   'igsh',
   'igshid',
+  'igsi',
   'is_from_webapp',
   'ref',
   'sender_device',

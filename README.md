@@ -5,7 +5,7 @@ Discord bot that cleans URLs in messages — strips tracking parameters and rewr
 ## What it does
 
 1. Scans messages for URLs
-2. Strips tracking params (`fbclid`, `gclid`, `igsh`, `igshid`, `is_from_webapp`, `ref`, `sender_device`, `si`, `ttclid`, `msclkid`, `mc_cid`, `mc_eid`, `_hsenc`, `_hsmi`, `gbraid`, `wbraid`, `yclid`, `oly_enc_id`, `oly_anon_id`, `mkt_tok`, `rb_clickid`, `vero_id`, `_openstat`, `dclid`, `cjevent`, `spm`, `scm`, `ref_src`, `ref_url`, `twclid`, `bpctr`, `ucat`, `utm_*`; `s` on X/Twitter only)
+2. Strips tracking params (`fbclid`, `gclid`, `igsh`, `igshid`, `igsi`, `is_from_webapp`, `ref`, `sender_device`, `si`, `ttclid`, `msclkid`, `mc_cid`, `mc_eid`, `_hsenc`, `_hsmi`, `gbraid`, `wbraid`, `yclid`, `oly_enc_id`, `oly_anon_id`, `mkt_tok`, `rb_clickid`, `vero_id`, `_openstat`, `dclid`, `cjevent`, `spm`, `scm`, `ref_src`, `ref_url`, `twclid`, `bpctr`, `ucat`, `utm_*`; `s` on X/Twitter only)
 3. Rewrites broken-embed domains using priority-ordered fallback chains
 4. Recognizes fixer domains users post themselves and upgrades them to the most reliable chain alternative
 5. After posting, polls for embed generation; retries next chain alternative if embed fails
