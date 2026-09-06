@@ -37,6 +37,7 @@ const TRACKING_PARAMS = [
   'cjevent',
   'spm',
   'scm',
+  'stkn',
   'ref_src',
   'ref_url',
   'twclid',
