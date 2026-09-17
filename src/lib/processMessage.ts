@@ -43,6 +43,7 @@ const TRACKING_PARAMS = [
   'twclid',
   'bpctr',
   'ucat',
+  'web_id',
   'mibextid'
 ]
 
