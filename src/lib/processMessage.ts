@@ -14,6 +14,8 @@ const TRACKING_PARAMS = [
   'igsh',
   'igshid',
   'igsi',
+  'dlrf',
+  'obrf',
   'is_from_webapp',
   'ref',
   'sender_device',

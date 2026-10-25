@@ -51,6 +51,12 @@ describe("stripTrackingParams", () => {
     expect(url.searchParams.toString()).toBe("");
   });
 
+  it("removes dlrf and obrf (Instagram share)", () => {
+    const url = new URL("https://www.instagram.com/reel/abc123/?dlrf=x&obrf=y&keep=1");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("keep=1");
+  });
+
   it("keeps `s` on non-X domains (WordPress search)", () => {
     const url = new URL("https://wordpress.example/?s=query");
     stripTrackingParams(url);
