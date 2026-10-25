@@ -1,6 +1,6 @@
-# AGENTS.md
+# CLAUDE.md
 
-This file provides guidance to OpenCode when working in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 ## Project Overview
 
@@ -29,6 +29,9 @@ If a message's URLs required any change, the bot reposts the cleaned content fir
 - Start (production): `pnpm start`
 - Lint: `pnpm lint`
 - Test: `pnpm test`
+- Single test file: `pnpm test tests/embedRewrites.test.ts`
+- Single test by name: `pnpm test -t "strips utm"`
+- Auto-format: `pnpm format` (`pnpm lint` also runs `prettier --check`)
 
 Always use `pnpm` for adding, removing, or updating dependencies (`pnpm add`, `pnpm remove`, `pnpm up`). Do not invoke `npm` or `npx` directly.
 
@@ -81,9 +84,9 @@ export const EMBED_REWRITE_CHAINS: Record<string, string[]> = {
 
 The `getRewriteChain()` function returns the chain for a hostname (resolving `CHAIN_ALIASES` first), or empty array if no rewrite exists. It also resolves any fixer domain (every chain element except the last, the canonical original) to its platform's chain, so user-posted fixer URLs are processed like any other input.
 
-Also handles these variant hostnames with the same chains: `m.instagram.com`, `instagr.am`, `www.twitter.com`, `mobile.twitter.com`, `www.tiktok.com`, `vm.tiktok.com`, `m.tiktok.com`, `old.reddit.com`, `m.reddit.com`, `m.facebook.com`.
+The returned chain is re-sorted at runtime by `prioritizeDomains()` (`domainHealth.ts`) by recorded failure rate (unknown domains count as 0.5). The order in `EMBED_REWRITE_CHAINS` is only the starting order. Each chain's last element is added to `ORIGINAL_DOMAINS` at import time, and no health stats are recorded for those hosts.
 
-Carousel detection runs only for the Instagram chain — the `facebook.com/reel/` path matches the Instagram post-id regex and must not trigger image probing.
+Also handles these variant hostnames with the same chains: `www.instagram.com`, `m.instagram.com`, `instagr.am`, `www.x.com`, `www.twitter.com`, `mobile.twitter.com`, `www.tiktok.com`, `vt.tiktok.com`, `vm.tiktok.com`, `m.tiktok.com`, `www.reddit.com`, `old.reddit.com`, `m.reddit.com`, `www.facebook.com`, `m.facebook.com`.
 
 Preserve the path, and any remaining non-tracking query parameters, when rewriting the hostname.
 
@@ -95,7 +98,7 @@ Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) 
 
 ### Embed Detection (`src/lib/embedDetector.ts`)
 
-After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 20000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message. This is the ground-truth check — rewritten URLs are not HTTP-validated before posting.
+After posting, poll for embed generation up to `EMBED_WAIT_TIMEOUT` (default: 20000ms) at 500ms intervals. If no embed appears, try the next alternative in the chain by editing the message. Fallback only runs in `GuildText` and `GuildAnnouncement` channels. This is the ground-truth check — rewritten URLs are not HTTP-validated before posting.
 
 ### Link Audit Log (`src/lib/linkLog.ts`)
 
@@ -117,6 +120,8 @@ Optional:
 ## Conventions
 
 - Use `async`/`await`, not raw Promise chains.
+- ESM project (`"type": "module"`): relative imports need the `.js` extension (`'./domainHealth.js'`).
+- Domain health and link log writes are best-effort and swallow I/O errors on purpose.
 - Validate all environment variables at startup in `config.ts`; fail fast with a clear error if required vars are missing.
 - Do not log message content containing user data at info level; use debug level if logging is needed for troubleshooting.
 - Attempt to delete the original message; silently ignore failures (e.g. missing `MANAGE_MESSAGES` permission).
@@ -132,3 +137,6 @@ Unit test URL cleaning, rewriting, and domain health logic in isolation (no live
 - URL extraction: trailing punctuation, balanced parens, markdown links
 - Domain health tracking and auto-downranking
 - Fallback chain behavior with multiple alternatives
+## Deployment
+
+Runs on a Raspberry Pi via Docker (`docker compose up -d --build`) or systemd (`scripts/install.sh`, `scripts/mikazuki.service`). See `DEPLOYMENT.md`. Runtime state lives in `.data/`.
