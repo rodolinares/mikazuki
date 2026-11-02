@@ -92,7 +92,7 @@ Preserve the path, and any remaining non-tracking query parameters, when rewriti
 
 ## Tracking Parameter List
 
-Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) as a single exported array in `src/lib/processMessage.ts`. Strip a parameter if its key exactly matches an entry, matches a known prefix pattern, or matches the domain-scoped map `TRACKING_PARAMS_BY_DOMAIN` for that hostname. Never strip parameters that are not on the known-tracking list, even if they look unfamiliar, since they may carry functional meaning for the target site.
+Maintain the list of stripped query parameter names (or prefixes, e.g. `utm_*`) as a single exported array in `src/lib/processMessage.ts`. Strip a parameter if its key exactly matches an entry, matches a known prefix pattern, or matches the domain-scoped map `TRACKING_PARAMS_BY_DOMAIN` for that hostname. Never strip parameters that are not on the known-tracking list, even if they look unfamiliar, since they may carry functional meaning for the target site. Exception: platforms in `QUERY_ALLOWLIST_BY_PLATFORM` (currently Instagram, keeping only `img_index`) drop every param not on their allowlist; this applies to the platform's alias and fixer hosts via its rewrite chain.
 
 ## Fallback Chain System
 

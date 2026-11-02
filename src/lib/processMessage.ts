@@ -57,8 +57,19 @@ const TRACKING_PARAMS_BY_DOMAIN: Record<string, string[]> = {
   'twitter.com': ['s']
 }
 
+// Platforms that keep inventing share params: keep only known-functional params, drop the rest.
+// Matched via the rewrite chain so aliases and fixer hosts are covered too.
+const QUERY_ALLOWLIST_BY_PLATFORM: Record<string, string[]> = {
+  'instagram.com': ['img_index']
+}
+
 const isTrackingParam = (key: string, host: string): boolean => {
   const lower = key.toLowerCase()
+  const chain = getRewriteChain(host)
+  const allowlist = Object.entries(QUERY_ALLOWLIST_BY_PLATFORM).find(
+    ([platform]) => host === platform || chain.includes(platform)
+  )?.[1]
+  if (allowlist) return !allowlist.includes(lower)
   if (TRACKING_PARAMS.includes(lower)) return true
   if (TRACKING_PREFIXES.some(p => lower.startsWith(p))) return true
   return Object.entries(TRACKING_PARAMS_BY_DOMAIN).some(

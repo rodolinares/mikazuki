@@ -52,9 +52,21 @@ describe("stripTrackingParams", () => {
   });
 
   it("removes dlrf and obrf (Instagram share)", () => {
-    const url = new URL("https://www.instagram.com/reel/abc123/?dlrf=x&obrf=y&keep=1");
+    const url = new URL("https://www.instagram.com/reel/abc123/?dlrf=x&obrf=y&img_index=1");
     stripTrackingParams(url);
-    expect(url.searchParams.toString()).toBe("keep=1");
+    expect(url.searchParams.toString()).toBe("img_index=1");
+  });
+
+  it("strips unknown Instagram params but keeps img_index", () => {
+    const url = new URL("https://www.instagram.com/p/abc123/?img_index=2&newtrack=x&hl=en");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("img_index=2");
+  });
+
+  it("applies the Instagram allowlist to fixer hosts", () => {
+    const url = new URL("https://kkinstagram.com/reel/abc123/?brandnew=1&img_index=1");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("img_index=1");
   });
 
   it("keeps `s` on non-X domains (WordPress search)", () => {
