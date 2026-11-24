@@ -39,6 +39,20 @@ describe("stripTrackingParams", () => {
     expect(url.searchParams.toString()).toBe("");
   });
 
+  it("strips unknown X params but keeps search q and f", () => {
+    const url = new URL("https://x.com/search?q=cats&f=live&src=typed_query&t=abc");
+    stripTrackingParams(url);
+    expect(url.searchParams.toString()).toBe("q=cats&f=live");
+  });
+
+  it("applies the X allowlist to twitter.com aliases and fixer hosts", () => {
+    for (const host of ["mobile.twitter.com", "fxtwitter.com", "vxtwitter.com"]) {
+      const url = new URL(`https://${host}/user/status/1?t=abc&s=20&newtrack=1`);
+      stripTrackingParams(url);
+      expect(url.searchParams.toString()).toBe("");
+    }
+  });
+
   it("removes mibextid (Meta share)", () => {
     const url = new URL("https://www.facebook.com/share/r/1D1EeBCt5W/?mibextid=wwXIfr");
     stripTrackingParams(url);

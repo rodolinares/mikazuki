@@ -60,7 +60,9 @@ const TRACKING_PARAMS_BY_DOMAIN: Record<string, string[]> = {
 // Platforms that keep inventing share params: keep only known-functional params, drop the rest.
 // Matched via the rewrite chain so aliases and fixer hosts are covered too.
 const QUERY_ALLOWLIST_BY_PLATFORM: Record<string, string[]> = {
-  'instagram.com': ['img_index']
+  'instagram.com': ['img_index'],
+  'x.com': ['q', 'f'],
+  'twitter.com': ['q', 'f']
 }
 
 const isTrackingParam = (key: string, host: string): boolean => {
